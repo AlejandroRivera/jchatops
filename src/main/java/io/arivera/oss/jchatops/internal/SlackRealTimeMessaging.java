@@ -9,6 +9,7 @@ import com.github.seratch.jslack.api.rtm.RTMClient;
 import com.github.seratch.jslack.common.http.SlackHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Scope;
@@ -22,16 +23,17 @@ import javax.websocket.DeploymentException;
 
 @Component
 @Scope("singleton")
-public class SlackRtmConfiguration {
+public class SlackRealTimeMessaging {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(SlackRtmConfiguration.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(SlackRealTimeMessaging.class);
 
   private final String slackToken;
 
   protected RTMClient rtm;
   protected RTMStartResponse rtmStartResponse;
 
-  public SlackRtmConfiguration(@Value("${slack.token}") String slackToken) {
+  @Autowired
+  public SlackRealTimeMessaging(@Value("${slack.token}") String slackToken) {
     this.slackToken = slackToken;
   }
 
@@ -54,8 +56,10 @@ public class SlackRtmConfiguration {
     } catch (SlackApiException | URISyntaxException e) {
       throw new IllegalStateException("Couldn't fetch RTM API WebSocket endpoint. Ensure the apiToken value is correct.");
     }
+
     rtm = slack.rtm(slackToken);
     rtm.connect();
+
     LOGGER.info("Slack RTM connection established");
   }
 

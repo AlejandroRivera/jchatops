@@ -9,7 +9,6 @@ import com.github.seratch.jslack.api.rtm.RTMClient;
 import com.github.seratch.jslack.api.rtm.RTMMessageHandler;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import io.arivera.oss.jchatops.MessageHandler;
 import io.arivera.oss.jchatops.MessageType;
 import io.arivera.oss.jchatops.ResponseSupplier;
 import io.arivera.oss.jchatops.responders.BasicResponder;
@@ -19,22 +18,14 @@ import io.arivera.oss.jchatops.responders.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
-import org.springframework.core.type.StandardMethodMetadata;
 import org.springframework.stereotype.Component;
-import org.springframework.web.context.support.GenericWebApplicationContext;
 
-import java.lang.annotation.Annotation;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
@@ -50,13 +41,11 @@ public class SlackRtmMessagesHandler implements RTMMessageHandler {
   private final Map<String, Im> ims;
   private final User bot;
 
-  private final Map<String, FriendlyMessageHandler> messageHandlerSettings;
-  private final Map<String, FriendlyMessageHandler> messageHandlerSettingsForNoConversations;
-
   private final ConversationManager conversationManager;
 
   private final NoOpResponder noOpResponder;
   private final BasicResponder basicResponder;
+  private final CustomMessageHandlersRegistrar customMessageHandlersRegistrar;
 
   @Autowired
   public SlackRtmMessagesHandler(RTMClient rtmClient,
@@ -64,6 +53,7 @@ public class SlackRtmMessagesHandler implements RTMMessageHandler {
                                  GsonSupplier gsonSupplier,
                                  Map<String, Im> ims,
                                  User bot, ConversationManager conversationManager,
+                                 CustomMessageHandlersRegistrar customMessageHandlersRegistrar,
                                  BasicResponder basicResponder,
                                  NoOpResponder noOpResponder) {
     this.rtmClient = rtmClient;
@@ -73,85 +63,13 @@ public class SlackRtmMessagesHandler implements RTMMessageHandler {
     this.bot = bot;
     this.basicResponder = basicResponder;
     this.noOpResponder = noOpResponder;
-    this.messageHandlerSettings = new HashMap<>();
-    this.messageHandlerSettingsForNoConversations = new HashMap<>();
+    this.customMessageHandlersRegistrar = customMessageHandlersRegistrar;
     this.conversationManager = conversationManager;
   }
 
   @PostConstruct
   public void init() {
-    registerMessageHandlers();
     rtmClient.addMessageHandler(this);
-  }
-
-  private void registerMessageHandlers() {
-    Map<String, ResponseSupplier> beans = applicationContext.getBeansOfType(ResponseSupplier.class);
-
-    beans.forEach((beanName, bean) -> {
-//      BeanDefinition beanDefinition = ((AnnotationConfigEmbeddedWebApplicationContext) applicationContext)    // AnnotationConfigEmbeddedWebApplicationContext
-//          .getBeanDefinition(beanName);
-
-      BeanDefinition beanDefinition = ((GenericWebApplicationContext) applicationContext)    // AnnotationConfigEmbeddedWebApplicationContext
-          .getBeanDefinition(beanName);
-
-//      Map annotationAttributes = ((MethodMetadataReadingVisitor) beanDefinition.getSource())
-//          .getAnnotationAttributes(MessageHandler.class.getName());
-
-//      String[] patterns = (String[]) annotationAttributes.get(MessageHandler.PATTERNS_FIELD_NAME);
-//      MessageType[] messageTypes = (MessageType[]) annotationAttributes.get(MessageHandler.MESSAGE_TYPES_FIELD_NAME);
-
-      Annotation[] annotations = ((StandardMethodMetadata) beanDefinition.getSource()).getIntrospectedMethod().getDeclaredAnnotations();
-
-      Arrays.stream(annotations)
-          .filter(annotation -> annotation instanceof MessageHandler)
-          .findFirst()
-          .map(annotation -> (MessageHandler) annotation)
-          .ifPresent(messageHandler -> {
-
-            if (messageHandlerSettings.containsKey(beanName)) {
-              throw new IllegalStateException("Bean with name '" + beanName + "' is already defined!");
-            }
-
-//            MessageHandler messageHandler = new MessageHandler(){
-//              @Override
-//              public Class<? extends Annotation> annotationType() {
-//                return MessageHandler.class;
-//              }
-//
-//              @Override
-//              public String[] patterns() {
-//                return patterns;
-//              }
-//
-//              @Override
-//              public MessageType[] messageTypes() {
-//                return messageTypes;
-//              }
-//            };
-
-            FriendlyMessageHandler messangeHandlerWrapper = new FriendlyMessageHandler(messageHandler);
-            String[] patterns = messageHandler.patterns();
-
-            Arrays.stream(patterns)
-                .forEach(pattern -> {
-                  try {
-                    Pattern compiledPattern = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE);
-                    messangeHandlerWrapper.getCompiledPatterns().add(compiledPattern);
-                  } catch (PatternSyntaxException e) {
-                    throw new IllegalArgumentException(
-                        String.format("The patterns value '%s' found in '%s' of class '%s' is invalid.",
-                            pattern, beanName, beanDefinition.getBeanClassName()), e
-                    );
-                  }
-                });
-
-            messageHandlerSettings.putIfAbsent(beanName, messangeHandlerWrapper);
-            if (!messangeHandlerWrapper.requiresConversation()) {
-              messageHandlerSettingsForNoConversations.putIfAbsent(beanName, messangeHandlerWrapper);
-            }
-            LOGGER.debug("Detected MessageHandler in bean named '{}': {}", beanName, messageHandler);
-          });
-    });
   }
 
   @PreDestroy
@@ -262,8 +180,9 @@ public class SlackRtmMessagesHandler implements RTMMessageHandler {
   private Map<String, FriendlyMessageHandler> getBeansAndSettingsToInspect(Optional<ConversationContext> conversation) {
     return conversation
         .map(ConversationContext::getNextConversationBeanNames)
-        .map(beanNames -> beanNames.stream().collect(toLinkedMap(Function.identity(), messageHandlerSettings::get)))
-        .orElse(this.messageHandlerSettingsForNoConversations);
+        .map(beanNames -> beanNames.stream().collect(
+            toLinkedMap(Function.identity(), customMessageHandlersRegistrar.getAllUserMessageHandlers()::get)))
+        .orElse(customMessageHandlersRegistrar.getStandaloneUserMessageHandlers());
   }
 
   private Message preProcessMessage(Message message, MessageType currentMessageType) {

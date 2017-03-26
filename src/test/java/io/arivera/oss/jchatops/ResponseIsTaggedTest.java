@@ -12,6 +12,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import io.arivera.oss.jchatops.internal.ConversationManager;
+import io.arivera.oss.jchatops.internal.CustomMessageHandlersRegistrar;
 import io.arivera.oss.jchatops.internal.GsonSupplier;
 import io.arivera.oss.jchatops.internal.SlackGlobalState;
 import io.arivera.oss.jchatops.internal.SlackMessageState;
@@ -41,7 +42,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 @RunWith(SpringRunner.class)
 @SpringBootTest(
     classes = {
-        SlackRtmConfigurationMock.class,
+        SlackRealTimeMessagingMock.class,
         ResponseIsTaggedTest.HelloCommand.class,
         ConversationManager.class,
         BasicResponder.class,
@@ -51,6 +52,7 @@ import org.springframework.test.context.junit4.SpringRunner;
         NoOpResponder.class,
         SameChannelResponseProcessor.class,
         TagUserResponseProcessor.class,
+        CustomMessageHandlersRegistrar.class,
         SlackRtmMessagesHandler.class,
         SlackGlobalState.class,
         SlackMessageState.class,

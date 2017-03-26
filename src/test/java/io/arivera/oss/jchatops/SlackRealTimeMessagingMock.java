@@ -3,7 +3,7 @@ package io.arivera.oss.jchatops;
 import com.github.seratch.jslack.api.methods.response.rtm.RTMStartResponse;
 import com.github.seratch.jslack.api.rtm.RTMClient;
 import io.arivera.oss.jchatops.internal.GsonSupplier;
-import io.arivera.oss.jchatops.internal.SlackRtmConfiguration;
+import io.arivera.oss.jchatops.internal.SlackRealTimeMessaging;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,11 +20,11 @@ import javax.websocket.DeploymentException;
 
 @EnableAutoConfiguration
 @Configuration
-public class SlackRtmConfigurationMock extends SlackRtmConfiguration {
+public class SlackRealTimeMessagingMock extends SlackRealTimeMessaging {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(SlackRtmConfigurationMock.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(SlackRealTimeMessagingMock.class);
 
-  public SlackRtmConfigurationMock() throws IOException, DeploymentException {
+  public SlackRealTimeMessagingMock() throws IOException, DeploymentException {
     super("fakeSlackToken!");
   }
 
