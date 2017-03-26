@@ -72,6 +72,18 @@
     </properties>
 
     <dependencies>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-websocket</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.seratch</groupId>
+            <artifactId>jslack</artifactId>
+            <version>1.0.8</version>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
@@ -219,7 +231,7 @@
                         </goals>
                     </execution>
                     <execution>
-                        <!-- Ensures we execute `mvn jacoco:check` during the `verify` phase (via auto-binding)-->
+                        <!-- Ensures we get `mvn jacoco:check` during the `verify` phase (via auto-binding)-->
                         <id>verify</id>
                         <goals>
                             <goal>check</goal>
