@@ -1,7 +1,8 @@
 package io.arivera.oss.jchatops.internal;
 
-import com.github.seratch.jslack.api.model.Message;
 import io.arivera.oss.jchatops.ConversationData;
+
+import com.github.seratch.jslack.api.model.Message;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;

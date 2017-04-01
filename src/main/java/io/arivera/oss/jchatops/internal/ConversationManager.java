@@ -26,7 +26,7 @@ public class ConversationManager {
     conversations.remove(new ConversationKey(userId, channel));
   }
 
-  private class ConversationKey {
+  private static class ConversationKey {
     private String userId;
     private String channelId;
 
@@ -44,12 +44,16 @@ public class ConversationManager {
     }
 
     @Override
-    public boolean equals(Object o) {
-      if (this == o) return true;
-      if (o == null || getClass() != o.getClass()) return false;
-      ConversationKey that = (ConversationKey) o;
-      return Objects.equals(userId, that.userId) &&
-             Objects.equals(channelId, that.channelId);
+    public boolean equals(Object other) {
+      if (this == other) {
+        return true;
+      }
+      if (other == null || getClass() != other.getClass()) {
+        return false;
+      }
+      ConversationKey that = (ConversationKey) other;
+      return Objects.equals(userId, that.userId)
+             && Objects.equals(channelId, that.channelId);
     }
 
     @Override

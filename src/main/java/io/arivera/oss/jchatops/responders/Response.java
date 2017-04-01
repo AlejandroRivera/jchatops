@@ -1,7 +1,8 @@
 package io.arivera.oss.jchatops.responders;
 
-import com.github.seratch.jslack.api.model.Message;
 import io.arivera.oss.jchatops.ResponseSupplier;
+
+import com.github.seratch.jslack.api.model.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
@@ -58,6 +59,9 @@ public class Response {
     return this;
   }
 
+  /**
+   * Defines the bean names that should be used to handle the response for this conversation.
+   */
   public Response followingUpWith(String... beanNames) {
     this.conversationBeansToFollowUpWith = Arrays.stream(beanNames)
         .map(bean -> {

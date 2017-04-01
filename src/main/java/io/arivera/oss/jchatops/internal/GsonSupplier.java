@@ -19,7 +19,7 @@ public class GsonSupplier implements Supplier<Gson> {
 
   @Bean
   @Scope("singleton")
-  public Gson get(){
+  public Gson get() {
     return gson;
   }
 

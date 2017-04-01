@@ -12,8 +12,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -21,16 +21,15 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.websocket.DeploymentException;
 
-@Component
-@Scope("singleton")
+@Configuration
 public class SlackRealTimeMessaging {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SlackRealTimeMessaging.class);
 
-  private final String slackToken;
-
   protected RTMClient rtm;
   protected RTMStartResponse rtmStartResponse;
+
+  private final String slackToken;
 
   @Autowired
   public SlackRealTimeMessaging(@Value("${slack.token}") String slackToken) {
@@ -59,7 +58,6 @@ public class SlackRealTimeMessaging {
 
     rtm = slack.rtm(slackToken);
     rtm.connect();
-
     LOGGER.info("Slack RTM connection established");
   }
 

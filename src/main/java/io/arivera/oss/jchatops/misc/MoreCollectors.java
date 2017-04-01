@@ -8,13 +8,18 @@ import java.util.stream.Collectors;
 
 public class MoreCollectors {
 
-  public static <T, K, U> Collector<T, ?, Map<K,U>> toLinkedMap(
+  /**
+   * Collects into a LinkedMap
+   *
+   * @throws IllegalStateException when a duplicated key is found.
+   */
+  public static <T, K, U> Collector<T, ?, Map<K, U>> toLinkedMap(
       Function<? super T, ? extends K> keyMapper,
-      Function<? super T, ? extends U> valueMapper)
-  {
+      Function<? super T, ? extends U> valueMapper) {
+
     return Collectors.toMap(keyMapper, valueMapper,
-        (u, v) -> {
-          throw new IllegalStateException(String.format("Cannot create map with duplicate key: %s", u));
+        (key, value) -> {
+          throw new IllegalStateException(String.format("Cannot create map with duplicate key: %s", key));
         },
         LinkedHashMap::new);
   }

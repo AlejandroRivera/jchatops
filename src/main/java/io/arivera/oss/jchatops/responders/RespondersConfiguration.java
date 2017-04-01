@@ -15,7 +15,7 @@ public class RespondersConfiguration {
   @Scope("singleton")
   @Autowired
   public List<ResponseProcessor> getResponseProcessors(SameChannelResponseProcessor sameChannel,
-                                                       TagUserResponseProcessor tagUser){
+                                                       TagUserResponseProcessor tagUser) {
     return Arrays.asList(sameChannel, tagUser);
   }
 

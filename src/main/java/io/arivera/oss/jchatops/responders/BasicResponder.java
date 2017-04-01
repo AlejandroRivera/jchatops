@@ -1,10 +1,11 @@
 package io.arivera.oss.jchatops.responders;
 
+import io.arivera.oss.jchatops.internal.ConversationContext;
+import io.arivera.oss.jchatops.internal.ConversationManager;
+
 import com.github.seratch.jslack.api.model.Message;
 import com.github.seratch.jslack.api.rtm.RTMClient;
 import com.google.gson.Gson;
-import io.arivera.oss.jchatops.internal.ConversationContext;
-import io.arivera.oss.jchatops.internal.ConversationManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +30,6 @@ public class BasicResponder implements Responder {
   private final ConversationManager conversationManager;
   private final List<ResponseProcessor> responseProcessors;
 
-
   @Autowired
   public BasicResponder(RTMClient rtmClient, Gson gson,
                         List<ResponseProcessor> responseProcessors,
@@ -40,6 +40,9 @@ public class BasicResponder implements Responder {
     this.conversationManager = conversationManager;
   }
 
+  /**
+   * Submits the response.
+   */
   public void respondWith(Response responseContext) {
     if (responseContext.shouldResetConversation()) {
       resetConversation(responseContext.getOriginalMessage());
