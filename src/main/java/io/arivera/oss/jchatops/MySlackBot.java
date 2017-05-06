@@ -1,10 +1,11 @@
-package com.example;
+package io.arivera.oss.jchatops;
 
-import io.arivera.oss.jchatops.JChatOpsApplication;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@SpringBootApplication(scanBasePackageClasses = {JChatOpsApplication.class, MySlackBot.class})
+@SpringBootApplication(
+    scanBasePackageClasses = {JChatOpsApplication.class}
+)
 public class MySlackBot {
 
   public static void main(String[] args) {

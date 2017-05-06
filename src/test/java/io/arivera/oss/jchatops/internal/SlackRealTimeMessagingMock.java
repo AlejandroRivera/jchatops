@@ -1,13 +1,10 @@
-package io.arivera.oss.jchatops;
+package io.arivera.oss.jchatops.internal;
 
 import com.github.seratch.jslack.api.methods.response.rtm.RTMStartResponse;
 import com.github.seratch.jslack.api.rtm.RTMClient;
-import io.arivera.oss.jchatops.internal.GsonSupplier;
-import io.arivera.oss.jchatops.internal.SlackRealTimeMessaging;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Configuration;
 
 import java.io.IOException;
@@ -17,8 +14,6 @@ import java.net.URISyntaxException;
 import javax.annotation.PostConstruct;
 import javax.websocket.DeploymentException;
 
-
-@EnableAutoConfiguration
 @Configuration
 public class SlackRealTimeMessagingMock extends SlackRealTimeMessaging {
 

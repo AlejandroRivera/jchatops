@@ -2,40 +2,41 @@ package io.arivera.oss.jchatops.internal;
 
 import static io.arivera.oss.jchatops.misc.MoreCollectors.toLinkedMap;
 
-import com.github.seratch.jslack.api.model.Im;
-import com.github.seratch.jslack.api.model.Message;
-import com.github.seratch.jslack.api.model.User;
-import com.github.seratch.jslack.api.rtm.RTMClient;
-import com.github.seratch.jslack.api.rtm.RTMMessageHandler;
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
+import io.arivera.oss.jchatops.CustomMessagePreProcessor;
+import io.arivera.oss.jchatops.MessageHandler;
 import io.arivera.oss.jchatops.MessageType;
 import io.arivera.oss.jchatops.ResponseSupplier;
 import io.arivera.oss.jchatops.responders.BasicResponder;
 import io.arivera.oss.jchatops.responders.NoOpResponder;
 import io.arivera.oss.jchatops.responders.Responder;
 import io.arivera.oss.jchatops.responders.Response;
+
+import com.github.seratch.jslack.api.model.Im;
+import com.github.seratch.jslack.api.model.Message;
+import com.github.seratch.jslack.api.model.User;
+import com.github.seratch.jslack.api.rtm.RTMMessageHandler;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.regex.Matcher;
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 
-@Component
+@Component("sync_handler")
 @Scope("singleton")
-public class SlackRtmMessagesHandler implements RTMMessageHandler {
+public class MessagesHandler implements RTMMessageHandler {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(SlackRtmMessagesHandler.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(MessagesHandler.class);
 
-  private final RTMClient rtmClient;
   private final Gson gson;
   private final ApplicationContext applicationContext;
   private final Map<String, Im> ims;
@@ -45,36 +46,32 @@ public class SlackRtmMessagesHandler implements RTMMessageHandler {
 
   private final NoOpResponder noOpResponder;
   private final BasicResponder basicResponder;
-  private final CustomMessageHandlersRegistrar customMessageHandlersRegistrar;
+
+  private final Map<String, MessageHandler.FriendlyMessageHandler> standaloneMessageHandlers;
+  private final Map<String, MessageHandler.FriendlyMessageHandler> allMessageHandlers;
+  private Optional<List<CustomMessagePreProcessor>> msgPreProcessors;
 
   @Autowired
-  public SlackRtmMessagesHandler(RTMClient rtmClient,
-                                 ApplicationContext applicationContext,
-                                 GsonSupplier gsonSupplier,
-                                 Map<String, Im> ims,
-                                 User bot, ConversationManager conversationManager,
-                                 CustomMessageHandlersRegistrar customMessageHandlersRegistrar,
-                                 BasicResponder basicResponder,
-                                 NoOpResponder noOpResponder) {
-    this.rtmClient = rtmClient;
+  public MessagesHandler(ApplicationContext applicationContext,
+                         GsonSupplier gsonSupplier,
+                         Map<String, Im> ims,
+                         User bot,
+                         ConversationManager conversationManager,
+                         @Qualifier("all") Map<String, MessageHandler.FriendlyMessageHandler> allMessageHandlers,
+                         @Qualifier("standalone") Map<String, MessageHandler.FriendlyMessageHandler> standaloneMessageHandlers,
+                         BasicResponder basicResponder,
+                         NoOpResponder noOpResponder,
+                         Optional<List<CustomMessagePreProcessor>> msgPreProcessors) {
     this.gson = gsonSupplier.get();
     this.applicationContext = applicationContext;
     this.ims = ims;
     this.bot = bot;
     this.basicResponder = basicResponder;
     this.noOpResponder = noOpResponder;
-    this.customMessageHandlersRegistrar = customMessageHandlersRegistrar;
     this.conversationManager = conversationManager;
-  }
-
-  @PostConstruct
-  public void init() {
-    rtmClient.addMessageHandler(this);
-  }
-
-  @PreDestroy
-  public void close() {
-    rtmClient.removeMessageHandler(this);
+    this.standaloneMessageHandlers = standaloneMessageHandlers;
+    this.allMessageHandlers = allMessageHandlers;
+    this.msgPreProcessors = msgPreProcessors;
   }
 
   @Override
@@ -100,7 +97,7 @@ public class SlackRtmMessagesHandler implements RTMMessageHandler {
     }
 
     MessageType currentMessageType = extractMessageType(rawMessage);
-    LOGGER.debug("'{}' message received: {}", currentMessageType, rawMessage);
+    LOGGER.info("'{}' message received: {}", currentMessageType, rawMessage);
 
     Message message = preProcessMessage(rawMessage, currentMessageType);
 
@@ -111,15 +108,17 @@ public class SlackRtmMessagesHandler implements RTMMessageHandler {
 
     Optional<ResponseSupplier> matchedResponder = Optional.empty();
 
-    Map<String, FriendlyMessageHandler> map = getBeansAndSettingsToInspect(conversation);
+    Map<String, MessageHandler.FriendlyMessageHandler> map = getBeansAndSettingsToInspect(conversation);
 
-    for (Map.Entry<String, FriendlyMessageHandler> entry : map.entrySet()) {
+    for (Map.Entry<String, MessageHandler.FriendlyMessageHandler> entry : map.entrySet()) {
       String beanName = entry.getKey();
 
-      FriendlyMessageHandler messageHandler = entry.getValue();
+      MessageHandler.FriendlyMessageHandler messageHandler = entry.getValue();
       LOGGER.debug("Inspecting bean '{}' to see if it can process the message...", beanName);
 
-      if (shouldSkipCurrentBean(beanName, currentMessageType, conversation, messageHandler)) continue;
+      if (shouldSkipCurrentBean(beanName, currentMessageType, conversation, messageHandler)) {
+        continue;
+      }
 
       Optional<Matcher> matchingMatcher = messageHandler.getCompiledPatterns().stream()
           .map(pattern -> pattern.matcher(message.getText()))
@@ -146,16 +145,15 @@ public class SlackRtmMessagesHandler implements RTMMessageHandler {
     if (matchedResponder.isPresent()) {
       response = matchedResponder.get().get();
       responder = basicResponder;
-    } else {
-      responder = noOpResponder;
     }
+
     responder.respondWith(response);
   }
 
   private boolean shouldSkipCurrentBean(String beanName,
                                         MessageType currentMessageType,
                                         Optional<ConversationContext> conversation,
-                                        FriendlyMessageHandler messageHandler) {
+                                        MessageHandler.FriendlyMessageHandler messageHandler) {
 
     if (conversation.isPresent() && !conversation.get().getNextConversationBeanNames().contains(beanName)) {
       LOGGER.debug("Bean '{}' is not in the list of beans allowed for the current conversation: {}",
@@ -177,18 +175,25 @@ public class SlackRtmMessagesHandler implements RTMMessageHandler {
     return false;
   }
 
-  private Map<String, FriendlyMessageHandler> getBeansAndSettingsToInspect(Optional<ConversationContext> conversation) {
+  private Map<String, MessageHandler.FriendlyMessageHandler> getBeansAndSettingsToInspect(Optional<ConversationContext> conversation) {
     return conversation
         .map(ConversationContext::getNextConversationBeanNames)
-        .map(beanNames -> beanNames.stream().collect(
-            toLinkedMap(Function.identity(), customMessageHandlersRegistrar.getAllUserMessageHandlers()::get)))
-        .orElse(customMessageHandlersRegistrar.getStandaloneUserMessageHandlers());
+        .map(beanNames -> beanNames.stream()
+            .collect(toLinkedMap(Function.identity(), allMessageHandlers::get)))
+        .orElse(standaloneMessageHandlers);
   }
 
   private Message preProcessMessage(Message message, MessageType currentMessageType) {
     if (currentMessageType == MessageType.TAGGED) {
       message.setText(message.getText().replaceAll("^\\s*<@" + bot.getId() + ">\\S*", "").trim());
     }
+
+    if (msgPreProcessors.isPresent()) {
+      for (CustomMessagePreProcessor preProcessor : msgPreProcessors.get()) {
+        message = preProcessor.process(message, currentMessageType);
+      }
+    }
+
     return message;
   }
 

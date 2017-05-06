@@ -1,12 +1,19 @@
 package io.arivera.oss.jchatops;
 
 import org.springframework.context.annotation.Scope;
+import org.springframework.core.annotation.AnnotationAttributes;
 
+import java.lang.annotation.Annotation;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.Arrays;
+import java.util.List;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
+import java.util.stream.Collectors;
 
 @Scope(value = "prototype")
 @Target({ElementType.TYPE, ElementType.METHOD})
@@ -16,6 +23,7 @@ public @interface MessageHandler {
 
   String PATTERNS_FIELD_NAME = "patterns";
   String MESSAGE_TYPES_FIELD_NAME = "messageTypes";
+  String REQUIRES_CONVERSATION_FIELD_NAME = "requiresConversation";
 
   /**
    * Regular Expression patterns.
@@ -31,4 +39,82 @@ public @interface MessageHandler {
    * If a bean is only meant to be invoked when in the context of a conversation, mark this as {@code true}
    */
   boolean requiresConversation() default false;
+
+
+  class BaseMessageHandler implements MessageHandler {
+
+    private final String[] patterns;
+    private final MessageType[] messageTypes;
+    private final boolean requiresConversation;
+
+    public BaseMessageHandler(AnnotationAttributes annotationAttributes) {
+      this.patterns = annotationAttributes.getStringArray(MessageHandler.PATTERNS_FIELD_NAME);
+      this.messageTypes = (MessageType[]) annotationAttributes.get(MessageHandler.MESSAGE_TYPES_FIELD_NAME);
+      this.requiresConversation = annotationAttributes.getBoolean(MessageHandler.REQUIRES_CONVERSATION_FIELD_NAME);
+    }
+
+    public BaseMessageHandler(String[] patterns, MessageType[] messageTypes, boolean requiresConversation) {
+      this.patterns = patterns;
+      this.messageTypes = messageTypes;
+      this.requiresConversation = requiresConversation;
+    }
+
+    @Override
+    public Class<? extends Annotation> annotationType() {
+      return MessageHandler.class;
+    }
+
+    @Override
+    public String[] patterns() {
+      return patterns;
+    }
+
+    @Override
+    public MessageType[] messageTypes() {
+      return messageTypes;
+    }
+
+    @Override
+    public boolean requiresConversation() {
+      return requiresConversation;
+    }
+  }
+
+  class FriendlyMessageHandler extends BaseMessageHandler {
+
+    private final List<Pattern> compiledPatterns;
+
+    public FriendlyMessageHandler(MessageHandler annotation) throws PatternSyntaxException {
+      super(annotation.patterns(), annotation.messageTypes(), annotation.requiresConversation());
+      this.compiledPatterns = Arrays.stream(patterns())
+          .map(pattern -> Pattern.compile(pattern, Pattern.CASE_INSENSITIVE))
+          .collect(Collectors.toList());
+    }
+
+    public FriendlyMessageHandler(AnnotationAttributes annotationAttributes) throws PatternSyntaxException {
+      super(annotationAttributes);
+
+      this.compiledPatterns = Arrays.stream(patterns())
+          .map(pattern -> Pattern.compile(pattern, Pattern.CASE_INSENSITIVE))
+          .collect(Collectors.toList());
+    }
+
+    public List<Pattern> getCompiledPatterns() {
+      return compiledPatterns;
+    }
+
+    public List<MessageType> getMessageTypes() {
+      return Arrays.asList(messageTypes());
+    }
+
+    @Override
+    public String toString() {
+      final StringBuilder sb = new StringBuilder("FriendlyMessageHandler{");
+      sb.append("messageTypes=").append(getMessageTypes());
+      sb.append(", requiresConversation=").append(requiresConversation());
+      sb.append(", compiledPatterns=").append(getCompiledPatterns());
+      sb.append('}');
+      return sb.toString();
+    }
+  }
 }
