@@ -1,13 +1,8 @@
 package io.arivera.oss.jchatops.internal;
 
-import static io.arivera.oss.jchatops.misc.MoreCollectors.toLinkedMap;
-
 import io.arivera.oss.jchatops.CustomMessagePreProcessor;
-import io.arivera.oss.jchatops.MessageHandler;
+import io.arivera.oss.jchatops.MessageFilter;
 import io.arivera.oss.jchatops.MessageType;
-import io.arivera.oss.jchatops.ResponseSupplier;
-import io.arivera.oss.jchatops.responders.BasicResponder;
-import io.arivera.oss.jchatops.responders.NoOpResponder;
 import io.arivera.oss.jchatops.responders.Responder;
 import io.arivera.oss.jchatops.responders.Response;
 
@@ -20,16 +15,16 @@ import com.google.gson.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
+import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
-import java.util.regex.Matcher;
 
 @Component("sync_handler")
 @Scope("singleton")
@@ -44,11 +39,7 @@ public class MessagesHandler implements RTMMessageHandler {
 
   private final ConversationManager conversationManager;
 
-  private final NoOpResponder noOpResponder;
-  private final BasicResponder basicResponder;
-
-  private final Map<String, MessageHandler.FriendlyMessageHandler> standaloneMessageHandlers;
-  private final Map<String, MessageHandler.FriendlyMessageHandler> allMessageHandlers;
+  private final Responder basicResponder;
   private Optional<List<CustomMessagePreProcessor>> msgPreProcessors;
 
   @Autowired
@@ -57,20 +48,14 @@ public class MessagesHandler implements RTMMessageHandler {
                          Map<String, Im> ims,
                          User bot,
                          ConversationManager conversationManager,
-                         @Qualifier("all") Map<String, MessageHandler.FriendlyMessageHandler> allMessageHandlers,
-                         @Qualifier("standalone") Map<String, MessageHandler.FriendlyMessageHandler> standaloneMessageHandlers,
-                         BasicResponder basicResponder,
-                         NoOpResponder noOpResponder,
+                         Responder basicResponder,
                          Optional<List<CustomMessagePreProcessor>> msgPreProcessors) {
     this.gson = gsonSupplier.get();
     this.applicationContext = applicationContext;
     this.ims = ims;
     this.bot = bot;
     this.basicResponder = basicResponder;
-    this.noOpResponder = noOpResponder;
     this.conversationManager = conversationManager;
-    this.standaloneMessageHandlers = standaloneMessageHandlers;
-    this.allMessageHandlers = allMessageHandlers;
     this.msgPreProcessors = msgPreProcessors;
   }
 
@@ -102,91 +87,34 @@ public class MessagesHandler implements RTMMessageHandler {
     Message message = preProcessMessage(rawMessage, currentMessageType);
 
     SlackMessageState.currentMessage.set(message);
+    SlackMessageState.currentMessageType.set(currentMessageType);
 
     Optional<ConversationContext> conversation = conversationManager.getConversation(message.getUser(), message.getChannel());
-    conversation.ifPresent(conversationContext -> SlackMessageState.currentConversation.set(conversationContext.getData()));
+    SlackMessageState.currentConversationContext.set(conversation.orElse(null));
+    SlackMessageState.currentConversationData.set(conversation.map(ConversationContext::getData).orElse(null));
 
-    Optional<ResponseSupplier> matchedResponder = Optional.empty();
+    List<MessageFilter> filters = new ArrayList<>(applicationContext.getBeansOfType(MessageFilter.class).values());
+    filters.sort(AnnotationAwareOrderComparator.INSTANCE);
 
-    Map<String, MessageHandler.FriendlyMessageHandler> map = getBeansAndSettingsToInspect(conversation);
-
-    for (Map.Entry<String, MessageHandler.FriendlyMessageHandler> entry : map.entrySet()) {
-      String beanName = entry.getKey();
-
-      MessageHandler.FriendlyMessageHandler messageHandler = entry.getValue();
-      LOGGER.debug("Inspecting bean '{}' to see if it can process the message...", beanName);
-
-      if (shouldSkipCurrentBean(beanName, currentMessageType, conversation, messageHandler)) {
-        continue;
-      }
-
-      Optional<Matcher> matchingMatcher = messageHandler.getCompiledPatterns().stream()
-          .map(pattern -> pattern.matcher(message.getText()))
-          .filter(Matcher::matches)
-          .findFirst();
-
-      if (matchingMatcher.isPresent()) {
-        LOGGER.debug("Pattern '{}' matched in bean '{}'",
-            matchingMatcher.get().pattern().pattern(), beanName);
-        SlackMessageState.currentPatternMatch.set(matchingMatcher.get());
-
-        ResponseSupplier bean = applicationContext.getBean(beanName, ResponseSupplier.class);
-        matchedResponder = Optional.of(bean);
-        break;
-      } else {
-        LOGGER.debug("Discarding bean '{}' because the patterns '{}' don't match the received message.",
-            beanName, messageHandler.getCompiledPatterns());
-      }
+    Iterator<MessageFilter> iterator = filters.iterator();
+    MessageFilter firstFilter = iterator.next();
+    MessageFilter previousFilter = firstFilter;
+    while(iterator.hasNext()) {
+      MessageFilter nextFilter = iterator.next();
+      previousFilter.setNextFilter(nextFilter);
+      previousFilter = nextFilter;
     }
 
-    Responder responder = noOpResponder;
-    Response response = null;
-
-    if (matchedResponder.isPresent()) {
-      response = matchedResponder.get().get();
-      responder = basicResponder;
+    if (!(previousFilter instanceof MessageRouter)) {
+      throw new IllegalStateException("Last filter in chain was " + previousFilter.getClass().getName()
+                                      + " and should be: " + MessageRouter.class.getName());
     }
 
-    responder.respondWith(response);
-  }
-
-  private boolean shouldSkipCurrentBean(String beanName,
-                                        MessageType currentMessageType,
-                                        Optional<ConversationContext> conversation,
-                                        MessageHandler.FriendlyMessageHandler messageHandler) {
-
-    if (conversation.isPresent() && !conversation.get().getNextConversationBeanNames().contains(beanName)) {
-      LOGGER.debug("Bean '{}' is not in the list of beans allowed for the current conversation: {}",
-          beanName, conversation.get().getNextConversationBeanNames());
-      return true;
-    }
-
-    if (!conversation.isPresent() && messageHandler.requiresConversation()) {
-      LOGGER.debug("Bean '{}' requires a conversation to have already been started", beanName);
-      return true;
-    }
-
-    if (!messageHandler.getMessageTypes().contains(currentMessageType)) {
-      LOGGER.debug("Bean '{}' can only handle messages of type {}, not : {}",
-          beanName, messageHandler.getMessageTypes(), currentMessageType);
-      return true;
-    }
-
-    return false;
-  }
-
-  private Map<String, MessageHandler.FriendlyMessageHandler> getBeansAndSettingsToInspect(Optional<ConversationContext> conversation) {
-    return conversation
-        .map(ConversationContext::getNextConversationBeanNames)
-        .map(beanNames -> beanNames.stream()
-            .collect(toLinkedMap(Function.identity(), allMessageHandlers::get)))
-        .orElse(standaloneMessageHandlers);
+    Optional<Response> maybeResponse = firstFilter.apply(message);
+    maybeResponse.ifPresent(basicResponder::submitResponse);
   }
 
   private Message preProcessMessage(Message message, MessageType currentMessageType) {
-    if (currentMessageType == MessageType.TAGGED) {
-      message.setText(message.getText().replaceAll("^\\s*<@" + bot.getId() + ">\\S*", "").trim());
-    }
 
     if (msgPreProcessors.isPresent()) {
       for (CustomMessagePreProcessor preProcessor : msgPreProcessors.get()) {

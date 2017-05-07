@@ -31,7 +31,7 @@ public @interface MessageHandler {
   String[] patterns() default {""};
 
   /**
-   * Defines the types of messages that this bean will respondWith to.
+   * Defines the types of messages that this bean will submitResponse to.
    */
   MessageType[] messageTypes() default {MessageType.TAGGED, MessageType.PRIVATE};
 
@@ -78,6 +78,16 @@ public @interface MessageHandler {
     public boolean requiresConversation() {
       return requiresConversation;
     }
+
+    @Override
+    public String toString() {
+      final StringBuilder sb = new StringBuilder("BaseMessageHandler{");
+      sb.append("patterns=").append(Arrays.toString(patterns));
+      sb.append(", messageTypes=").append(Arrays.toString(messageTypes));
+      sb.append(", requiresConversation=").append(requiresConversation);
+      sb.append('}');
+      return sb.toString();
+    }
   }
 
   class FriendlyMessageHandler extends BaseMessageHandler {
@@ -107,14 +117,5 @@ public @interface MessageHandler {
       return Arrays.asList(messageTypes());
     }
 
-    @Override
-    public String toString() {
-      final StringBuilder sb = new StringBuilder("FriendlyMessageHandler{");
-      sb.append("messageTypes=").append(getMessageTypes());
-      sb.append(", requiresConversation=").append(requiresConversation());
-      sb.append(", compiledPatterns=").append(getCompiledPatterns());
-      sb.append('}');
-      return sb.toString();
-    }
   }
 }

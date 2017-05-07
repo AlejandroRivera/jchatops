@@ -46,9 +46,6 @@ public class Response {
     return response;
   }
 
-  /**
-   * Message will be processed by the registered list of {@link ResponseProcessor}s before being submitted.
-   */
   public Response message(Message message) {
     responseMessage = message;
     return this;
