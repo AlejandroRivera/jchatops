@@ -9,7 +9,7 @@ import io.arivera.oss.jchatops.ConversationData;
 import io.arivera.oss.jchatops.MessageHandler;
 import io.arivera.oss.jchatops.MessageType;
 import io.arivera.oss.jchatops.ResponseSupplier;
-import io.arivera.oss.jchatops.responders.DefaultConversationHandlers;
+import io.arivera.oss.jchatops.responders.CancelConversationHandlers;
 import io.arivera.oss.jchatops.responders.Response;
 
 import com.github.seratch.jslack.api.methods.response.rtm.RTMStartResponse;
@@ -134,9 +134,9 @@ public class ConversationTest extends BaseTest {
     verify(rtmClient, times(3)).sendMessage(messageCaptor.capture());
     response = messageCaptor.getValue();
     assertThat(response, containsString("I did not understand that"));
-    assertThat(response, containsString(DefaultConversationHandlers.RESET_KEY_PHRASE));
+    assertThat(response, containsString(CancelConversationHandlers.RESET_KEY_PHRASE));
 
-    msgToBot.add("text", new JsonPrimitive(DefaultConversationHandlers.RESET_KEY_PHRASE));
+    msgToBot.add("text", new JsonPrimitive(CancelConversationHandlers.RESET_KEY_PHRASE));
     rtmClient.onMessage(gson.toJson(msgToBot));
     verify(rtmClient, times(4)).sendMessage(messageCaptor.capture());
     response = messageCaptor.getValue();

@@ -22,8 +22,7 @@ public class Responder {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(Responder.class);
 
-  private static final String[] SYSTEM_CONVERSATION_BEANS =
-      {DefaultConversationHandlers.RESET_BEAN_NAME, DefaultConversationHandlers.UNEXPECTED_MSG_BEAN_NAME};
+  private static final String[] SYSTEM_CONVERSATION_BEANS = {CancelConversationHandlers.RESET_BEAN_NAME};
 
   private final RTMClient rtmClient;
   private final Gson gson;

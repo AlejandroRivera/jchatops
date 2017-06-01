@@ -15,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
-import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -25,7 +24,6 @@ import java.util.regex.Matcher;
 
 @Component
 @Scope("prototype")
-@Order(Integer.MAX_VALUE)
 public class MessageRouter extends MessageFilter {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MessageRouter.class);
@@ -42,6 +40,7 @@ public class MessageRouter extends MessageFilter {
                        @Qualifier("all") Map<String, MessageHandler.FriendlyMessageHandler> allMessageHandlers,
                        @Qualifier("standalone") Map<String, MessageHandler.FriendlyMessageHandler> standaloneMessageHandlers,
                        ApplicationContext applicationContext) {
+    super(Integer.MAX_VALUE);
     this.conversation = conversation;
     this.currentMessageType = currentMessageType;
     this.allMessageHandlers = allMessageHandlers;

@@ -1,6 +1,5 @@
 package io.arivera.oss.jchatops.internal;
 
-import io.arivera.oss.jchatops.CustomMessagePreProcessor;
 import io.arivera.oss.jchatops.MessageFilter;
 import io.arivera.oss.jchatops.MessageType;
 import io.arivera.oss.jchatops.responders.Responder;
@@ -40,7 +39,6 @@ public class MessagesHandler implements RTMMessageHandler {
   private final ConversationManager conversationManager;
 
   private final Responder basicResponder;
-  private Optional<List<CustomMessagePreProcessor>> msgPreProcessors;
 
   @Autowired
   public MessagesHandler(ApplicationContext applicationContext,
@@ -48,15 +46,13 @@ public class MessagesHandler implements RTMMessageHandler {
                          Map<String, Im> ims,
                          User bot,
                          ConversationManager conversationManager,
-                         Responder basicResponder,
-                         Optional<List<CustomMessagePreProcessor>> msgPreProcessors) {
+                         Responder basicResponder) {
     this.gson = gsonSupplier.get();
     this.applicationContext = applicationContext;
     this.ims = ims;
     this.bot = bot;
     this.basicResponder = basicResponder;
     this.conversationManager = conversationManager;
-    this.msgPreProcessors = msgPreProcessors;
   }
 
   @Override
@@ -75,16 +71,14 @@ public class MessagesHandler implements RTMMessageHandler {
       return;
     }
 
-    Message rawMessage = gson.fromJson(jsonObject, Message.class);
-    if (!rawMessage.getType().equalsIgnoreCase("message")) {
+    Message message = gson.fromJson(jsonObject, Message.class);
+    if (!message.getType().equalsIgnoreCase("message")) {
       LOGGER.debug("Message received but it's not an actual 'message': {}", jsonMessage);
       return;
     }
 
-    MessageType currentMessageType = extractMessageType(rawMessage);
-    LOGGER.info("'{}' message received: {}", currentMessageType, rawMessage);
-
-    Message message = preProcessMessage(rawMessage, currentMessageType);
+    MessageType currentMessageType = extractMessageType(message);
+    LOGGER.info("'{}' message received: {}", currentMessageType, message);
 
     SlackMessageState.currentMessage.set(message);
     SlackMessageState.currentMessageType.set(currentMessageType);
@@ -112,17 +106,6 @@ public class MessagesHandler implements RTMMessageHandler {
 
     Optional<Response> maybeResponse = firstFilter.apply(message);
     maybeResponse.ifPresent(basicResponder::submitResponse);
-  }
-
-  private Message preProcessMessage(Message message, MessageType currentMessageType) {
-
-    if (msgPreProcessors.isPresent()) {
-      for (CustomMessagePreProcessor preProcessor : msgPreProcessors.get()) {
-        message = preProcessor.process(message, currentMessageType);
-      }
-    }
-
-    return message;
   }
 
   private MessageType extractMessageType(Message message) {

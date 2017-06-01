@@ -7,13 +7,12 @@ import io.arivera.oss.jchatops.responders.Response;
 import com.github.seratch.jslack.api.model.Message;
 import com.github.seratch.jslack.api.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
-import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
-@Order(100)
 @Component
 @Scope("prototype")
 public class BotTaggedMessageRemoverFilter extends MessageFilter {
@@ -22,7 +21,9 @@ public class BotTaggedMessageRemoverFilter extends MessageFilter {
   private final User bot;
 
   @Autowired
-  public BotTaggedMessageRemoverFilter(MessageType messageType, User bot) {
+  public BotTaggedMessageRemoverFilter(@Value("${jchatops.filters.unrecognized_command:100}") int order,
+                                       MessageType messageType, User bot) {
+    super(order);
     this.messageType = messageType;
     this.bot = bot;
   }

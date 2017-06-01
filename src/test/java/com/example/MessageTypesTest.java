@@ -1,6 +1,7 @@
 package com.example;
 
 import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.anyString;
@@ -77,7 +78,8 @@ public class MessageTypesTest extends BaseTest {
     messageReceived.add("team",     new JsonPrimitive(slackState.getTeam().getId()));
 
     rtmClient.onMessage(gson.toJson(messageReceived));
-    verify(rtmClient, never()).sendMessage(anyString());
+    verify(rtmClient).sendMessage(messageCaptor.capture());
+    assertThat(messageCaptor.getValue(), not(containsString("foo back!")));
   }
 
   @Test
@@ -90,7 +92,8 @@ public class MessageTypesTest extends BaseTest {
     messageReceived.add("team",     new JsonPrimitive(slackState.getTeam().getId()));
 
     rtmClient.onMessage(gson.toJson(messageReceived));
-    verify(rtmClient).sendMessage(anyString());
+    verify(rtmClient).sendMessage(messageCaptor.capture());
+    assertThat(messageCaptor.getValue(), containsString("bar back!"));
   }
 
   @Test
@@ -103,7 +106,8 @@ public class MessageTypesTest extends BaseTest {
     messageReceived.add("team",     new JsonPrimitive(slackState.getTeam().getId()));
 
     rtmClient.onMessage(gson.toJson(messageReceived));
-    verify(rtmClient).sendMessage(anyString());
+    verify(rtmClient).sendMessage(messageCaptor.capture());
+    assertThat(messageCaptor.getValue(), containsString("bar back!"));
   }
 
   @Test
@@ -116,7 +120,8 @@ public class MessageTypesTest extends BaseTest {
     messageReceived.add("team",     new JsonPrimitive(slackState.getTeam().getId()));
 
     rtmClient.onMessage(gson.toJson(messageReceived));
-    verify(rtmClient).sendMessage(anyString());
+    verify(rtmClient).sendMessage(messageCaptor.capture());
+    assertThat(messageCaptor.getValue(), containsString("bar back!"));
   }
 
   @Test
@@ -129,7 +134,8 @@ public class MessageTypesTest extends BaseTest {
     messageReceived.add("team",     new JsonPrimitive(slackState.getTeam().getId()));
 
     rtmClient.onMessage(gson.toJson(messageReceived));
-    verify(rtmClient, never()).sendMessage(anyString());
+    verify(rtmClient).sendMessage(messageCaptor.capture());
+    assertThat(messageCaptor.getValue(), not(containsString("bar back!")));
   }
 
   @Test

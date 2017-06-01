@@ -6,14 +6,13 @@ import io.arivera.oss.jchatops.responders.Response;
 import com.github.seratch.jslack.api.model.Im;
 import com.github.seratch.jslack.api.model.Message;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
-import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
 import java.util.Optional;
 
-@Order(300)
 @Component
 @Scope("prototype")
 public class TagUserResponseFilter extends MessageFilter {
@@ -21,7 +20,9 @@ public class TagUserResponseFilter extends MessageFilter {
   private final Map<String, Im> instantMessages;
 
   @Autowired
-  public TagUserResponseFilter(Map<String, Im> instantMessages) {
+  public TagUserResponseFilter(@Value("${jchatops.filters.tag_user:300}") int order,
+                               Map<String, Im> instantMessages) {
+    super(order);
     this.instantMessages = instantMessages;
   }
 
