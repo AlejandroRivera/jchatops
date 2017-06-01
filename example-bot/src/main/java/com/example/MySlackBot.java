@@ -13,10 +13,6 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 public class MySlackBot {
 
   public static void main(String[] args) {
-//    List<GrantedAuthority> grantedAuthorities = AuthorityUtils.commaSeparatedStringToAuthorityList("ROLE_NONE");
-//    UsernamePasswordAuthenticationToken user = new UsernamePasswordAuthenticationToken("user", "N/A", grantedAuthorities);
-//    SecurityContextHolder.getContext().setAuthentication(user);
-
     SpringApplication.run(MySlackBot.class, args);
   }
 
