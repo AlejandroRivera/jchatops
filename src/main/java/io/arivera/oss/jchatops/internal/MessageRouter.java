@@ -5,7 +5,6 @@ import static io.arivera.oss.jchatops.misc.MoreCollectors.toLinkedMap;
 import io.arivera.oss.jchatops.MessageFilter;
 import io.arivera.oss.jchatops.MessageHandler;
 import io.arivera.oss.jchatops.MessageType;
-import io.arivera.oss.jchatops.ResponseSupplier;
 import io.arivera.oss.jchatops.responders.Response;
 
 import com.github.seratch.jslack.api.model.Message;
@@ -51,7 +50,7 @@ public class MessageRouter extends MessageFilter {
   @Override
   public Optional<Response> apply(Message message) {
 
-    Optional<ResponseSupplier> matchedResponseSupplier = Optional.empty();
+    Optional<Response> matchedResponseSupplier = Optional.empty();
 
     Map<String, MessageHandler.FriendlyMessageHandler> messageHandlersToInspect = getMessageHandlersToInspect(conversation);
 
@@ -74,7 +73,7 @@ public class MessageRouter extends MessageFilter {
         LOGGER.debug("Pattern '{}' matched in bean '{}'", matchingMatcher.get().pattern().pattern(), beanName);
         SlackMessageState.currentPatternMatch.set(matchingMatcher.get());
 
-        ResponseSupplier bean = applicationContext.getBean(beanName, ResponseSupplier.class);
+        Response bean = applicationContext.getBean(beanName, Response.class);
         matchedResponseSupplier = Optional.of(bean);
         break;
       } else {
@@ -83,7 +82,7 @@ public class MessageRouter extends MessageFilter {
       }
     }
 
-    return matchedResponseSupplier.map(ResponseSupplier::get);
+    return matchedResponseSupplier;
   }
 
   @Override

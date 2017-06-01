@@ -8,7 +8,6 @@ import static org.mockito.Mockito.verify;
 import io.arivera.oss.jchatops.ConversationData;
 import io.arivera.oss.jchatops.MessageHandler;
 import io.arivera.oss.jchatops.MessageType;
-import io.arivera.oss.jchatops.ResponseSupplier;
 import io.arivera.oss.jchatops.responders.CancelConversationHandlers;
 import io.arivera.oss.jchatops.responders.Response;
 
@@ -154,8 +153,8 @@ public class ConversationTest extends BaseTest {
 
     @Bean
     @MessageHandler(patterns = "hello", messageTypes = {MessageType.PRIVATE, MessageType.TAGGED})
-    public ResponseSupplier hello(Message message, Response response) {
-      return () -> response
+    public Response hello(Message message, Response response) {
+      return response
           .message(message.getText() + " back! What is your name?")
           .followingUpWith("getNameAndAskAge");
     }
@@ -168,40 +167,36 @@ public class ConversationTest extends BaseTest {
             "(?<name>\\w+) is what they call me"
         },
         requiresConversation = true)
-    public ResponseSupplier getNameAndAskAge(Response response, Matcher matcher, ConversationData conversation) {
-      return () -> {
+    public Response getNameAndAskAge(Response response, Matcher matcher, ConversationData conversation) {
         conversation.put("name", matcher.group("name"));
         return response
             .message("How old are you?")
             .followingUpWith("getAgeAndConfirm");
-      };
     }
 
     @Bean
     @MessageHandler(patterns = "\\d+", requiresConversation = true)
-    public ResponseSupplier getAgeAndConfirm(Message message, Response response, ConversationData conversation) {
-      return () -> {
+    public Response getAgeAndConfirm(Message message, Response response, ConversationData conversation) {
         conversation.put("age", message.getText());
         return response
             .message(String.format("You are '%s' and you are %s years old. Did I get that right?",
                 conversation.get("name"),
                 conversation.get("age")))
             .followingUpWith("correct", "incorrect");
-      };
     }
 
     @Bean
     @MessageHandler(patterns = "(no|no way|nope|not at all|wrong|incorrect)", requiresConversation = true)
-    public ResponseSupplier incorrect(Response response) {
-      return () -> response
+    public Response incorrect(Response response) {
+      return response
           .message("Oops! Let's start over... What is your name?")
           .followingUpWith("getNameAndAskAge");
     }
 
     @Bean
     @MessageHandler(patterns = "(yes|yup|correct|perfect|indeed|great)", requiresConversation = true)
-    public ResponseSupplier correct(Response response) {
-      return () -> response.message("Confirmed!");
+    public Response correct(Response response) {
+      return response.message("Confirmed!");
     }
 
   }

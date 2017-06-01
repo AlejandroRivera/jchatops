@@ -1,7 +1,7 @@
 package io.arivera.oss.jchatops.internal;
 
 import io.arivera.oss.jchatops.MessageHandler;
-import io.arivera.oss.jchatops.ResponseSupplier;
+import io.arivera.oss.jchatops.responders.Response;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,7 +59,7 @@ public class CustomMessageHandlersRegistrar {
             .filter(source -> source.getReturnTypeName() != null)
             .filter(source -> {
                   try {
-                    return ResponseSupplier.class.isAssignableFrom(Class.forName(source.getReturnTypeName()));
+                    return Response.class.isAssignableFrom(Class.forName(source.getReturnTypeName()));
                   } catch (ClassNotFoundException e) {
                     return false;
                   }

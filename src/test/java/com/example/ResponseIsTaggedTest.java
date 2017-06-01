@@ -6,7 +6,6 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.verify;
 
 import io.arivera.oss.jchatops.MessageHandler;
-import io.arivera.oss.jchatops.ResponseSupplier;
 import io.arivera.oss.jchatops.responders.Response;
 
 import com.github.seratch.jslack.api.methods.response.rtm.RTMStartResponse;
@@ -83,8 +82,8 @@ public class ResponseIsTaggedTest extends BaseTest{
 
     @Bean
     @MessageHandler(patterns = "hey")
-    public ResponseSupplier foo(Message message, Response response) {
-      return () -> response.message(message.getText() + " back!");
+    public Response foo(Message message, Response response) {
+      return response.message(message.getText() + " back!");
     }
 
   }

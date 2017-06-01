@@ -11,6 +11,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
@@ -51,6 +52,12 @@ public @interface MessageHandler {
       this.patterns = annotationAttributes.getStringArray(MessageHandler.PATTERNS_FIELD_NAME);
       this.messageTypes = (MessageType[]) annotationAttributes.get(MessageHandler.MESSAGE_TYPES_FIELD_NAME);
       this.requiresConversation = annotationAttributes.getBoolean(MessageHandler.REQUIRES_CONVERSATION_FIELD_NAME);
+    }
+
+    public BaseMessageHandler(Map<String,Object> annotationAttributes) {
+      this.patterns = (String[]) annotationAttributes.get(MessageHandler.PATTERNS_FIELD_NAME);
+      this.messageTypes = (MessageType[]) annotationAttributes.get(MessageHandler.MESSAGE_TYPES_FIELD_NAME);
+      this.requiresConversation = (boolean) annotationAttributes.get(MessageHandler.REQUIRES_CONVERSATION_FIELD_NAME);
     }
 
     public BaseMessageHandler(String[] patterns, MessageType[] messageTypes, boolean requiresConversation) {
@@ -102,6 +109,14 @@ public @interface MessageHandler {
     }
 
     public FriendlyMessageHandler(AnnotationAttributes annotationAttributes) throws PatternSyntaxException {
+      super(annotationAttributes);
+
+      this.compiledPatterns = Arrays.stream(patterns())
+          .map(pattern -> Pattern.compile(pattern, Pattern.CASE_INSENSITIVE))
+          .collect(Collectors.toList());
+    }
+
+    public FriendlyMessageHandler(Map<String,Object> annotationAttributes) throws PatternSyntaxException {
       super(annotationAttributes);
 
       this.compiledPatterns = Arrays.stream(patterns())

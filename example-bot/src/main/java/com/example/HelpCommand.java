@@ -1,7 +1,6 @@
 package com.example;
 
 import io.arivera.oss.jchatops.MessageHandler;
-import io.arivera.oss.jchatops.ResponseSupplier;
 import io.arivera.oss.jchatops.responders.Response;
 
 import com.github.seratch.jslack.api.model.Message;
@@ -17,8 +16,7 @@ public class HelpCommand {
 
   @Bean
   @MessageHandler(patterns = "help")
-  public ResponseSupplier help(Message message, Response response) {
-    return () -> {
+  public Response help(Message message, Response response) {
       try {
         Thread.sleep(5000);
       } catch (InterruptedException e) {
@@ -28,13 +26,12 @@ public class HelpCommand {
                    + "* Say: 'hello'\n"
                    + "* Say: 'help\n"
                    + "```");
-    };
   }
 
   @Bean
   @MessageHandler(patterns = "help hello")
-  public ResponseSupplier helpHello(Message message, Response response) {
-    return () -> response
+  public Response helpHello(Message message, Response response) {
+    return response
         .message("> Hello\n"
                  + "Starts a conversation about your name age.");
   }

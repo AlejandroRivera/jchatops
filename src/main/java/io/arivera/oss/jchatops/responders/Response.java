@@ -1,11 +1,15 @@
 package io.arivera.oss.jchatops.responders;
 
-import io.arivera.oss.jchatops.ResponseSupplier;
-
 import com.github.seratch.jslack.api.model.Message;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
+import org.springframework.core.type.MethodMetadata;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -60,13 +64,29 @@ public class Response {
    * Defines the bean names that should be used to handle the response for this conversation.
    */
   public Response followingUpWith(String... beanNames) {
+    BeanDefinitionRegistry beanFactory;
+
+    if (applicationContext instanceof AnnotationConfigEmbeddedWebApplicationContext){
+      beanFactory = (BeanDefinitionRegistry)
+          ((AnnotationConfigEmbeddedWebApplicationContext) applicationContext).getBeanFactory();
+    } else {
+      AutowireCapableBeanFactory autowireCapableBeanFactory = applicationContext.getAutowireCapableBeanFactory();
+      beanFactory = (DefaultListableBeanFactory) autowireCapableBeanFactory;
+    }
+
     this.conversationBeansToFollowUpWith = Arrays.stream(beanNames)
         .map(bean -> {
-          if (applicationContext.getBean(bean, ResponseSupplier.class) == null) {
-            throw new IllegalArgumentException(
-                "Bean '" + bean + "' of type " + ResponseSupplier.class.getSimpleName() + " not found.");
+          BeanDefinition beanDefinition = beanFactory.getBeanDefinition(bean);
+          MethodMetadata source = (MethodMetadata) beanDefinition.getSource();
+          try {
+            if (Response.class.isAssignableFrom(Class.forName(source.getReturnTypeName()))) {
+              return bean;
+            }
+          } catch (ClassNotFoundException e) {
+            // ignored
           }
-          return bean;
+          throw new IllegalArgumentException(
+              "Bean '" + bean + "' of type " + Response.class.getSimpleName() + " not found.");
         })
         .collect(Collectors.toList());
     return this;

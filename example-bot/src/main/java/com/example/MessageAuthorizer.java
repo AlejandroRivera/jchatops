@@ -40,7 +40,7 @@ public class MessageAuthorizer extends MessageFilter {
     super(ORDER);
     this.users = (Map<String, User>) applicationContext.getBean("getUserMap");
     this.applicationContext = applicationContext;
-    this.adminEmails = new HashSet<>(Arrays.asList("alejandro2@redmart.com"));
+    this.adminEmails = new HashSet<>(Arrays.asList("alejandro@redmart.com"));
   }
 
   @Override

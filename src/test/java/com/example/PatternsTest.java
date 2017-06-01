@@ -10,7 +10,6 @@ import static org.mockito.Mockito.verify;
 
 import io.arivera.oss.jchatops.MessageHandler;
 import io.arivera.oss.jchatops.MessageType;
-import io.arivera.oss.jchatops.ResponseSupplier;
 import io.arivera.oss.jchatops.responders.Response;
 
 import com.github.seratch.jslack.api.methods.response.rtm.RTMStartResponse;
@@ -117,8 +116,8 @@ public class PatternsTest extends BaseTest {
 
     @Bean
     @MessageHandler(patterns = "hello", messageTypes = {MessageType.PRIVATE, MessageType.PUBLIC, MessageType.TAGGED})
-    public ResponseSupplier hey(Message message, Response response) {
-      return () -> response.message(message.getText() + " back!");
+    public Response hey(Message message, Response response) {
+      return response.message(message.getText() + " back!");
     }
   }
 
