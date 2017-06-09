@@ -26,7 +26,6 @@ import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 import org.springframework.test.context.ContextConfiguration;
 
@@ -114,7 +113,6 @@ public class PatternsTest extends BaseTest {
   @Service
   public static class HelloCommand {
 
-    @Bean
     @MessageHandler(patterns = "hello", messageTypes = {MessageType.PRIVATE, MessageType.PUBLIC, MessageType.TAGGED})
     public Response hey(Message message, Response response) {
       return response.message(message.getText() + " back!");

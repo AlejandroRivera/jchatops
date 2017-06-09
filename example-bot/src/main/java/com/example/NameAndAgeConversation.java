@@ -8,7 +8,6 @@ import io.arivera.oss.jchatops.responders.Response;
 import com.github.seratch.jslack.api.model.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Bean;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Service;
 
@@ -19,7 +18,6 @@ public class NameAndAgeConversation {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(NameAndAgeConversation.class);
 
-  @Bean
   @MessageHandler(patterns = "hello", messageTypes = {MessageType.PRIVATE, MessageType.TAGGED})
   @Secured("ROLE_ADMIN")
   public Response hello(Message message, Response response) {
@@ -28,7 +26,6 @@ public class NameAndAgeConversation {
         .followingUpWith("getNameAndAskAge");
   }
 
-  @Bean
   @MessageHandler(
       patterns = {
           "(?<name>\\w+)",
@@ -43,7 +40,6 @@ public class NameAndAgeConversation {
           .followingUpWith("getAgeAndConfirm");
   }
 
-  @Bean
   @MessageHandler(patterns = "\\d+", requiresConversation = true)
   public Response getAgeAndConfirm(Message message, Response response, ConversationData conversation) {
       conversation.put("age", message.getText());
@@ -54,7 +50,6 @@ public class NameAndAgeConversation {
           .followingUpWith("correct", "incorrect");
   }
 
-  @Bean
   @MessageHandler(patterns = "(no|no way|nope|not at all|wrong|incorrect)", requiresConversation = true)
   public Response incorrect(Response response) {
     return response
@@ -62,7 +57,6 @@ public class NameAndAgeConversation {
         .followingUpWith("getNameAndAskAge");
   }
 
-  @Bean
   @MessageHandler(patterns = "(yes|yup|correct|perfect|indeed|great)", requiresConversation = true)
   public Response correct(Response response) {
     return response

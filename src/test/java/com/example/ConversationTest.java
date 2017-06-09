@@ -26,7 +26,6 @@ import org.mockito.MockitoAnnotations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
 
@@ -151,7 +150,6 @@ public class ConversationTest extends BaseTest {
   @Configuration
   public static class HelloCommand {
 
-    @Bean
     @MessageHandler(patterns = "hello", messageTypes = {MessageType.PRIVATE, MessageType.TAGGED})
     public Response hello(Message message, Response response) {
       return response
@@ -159,7 +157,6 @@ public class ConversationTest extends BaseTest {
           .followingUpWith("getNameAndAskAge");
     }
 
-    @Bean
     @MessageHandler(
         patterns = {
             "(?<name>\\w+)",
@@ -174,7 +171,6 @@ public class ConversationTest extends BaseTest {
             .followingUpWith("getAgeAndConfirm");
     }
 
-    @Bean
     @MessageHandler(patterns = "\\d+", requiresConversation = true)
     public Response getAgeAndConfirm(Message message, Response response, ConversationData conversation) {
         conversation.put("age", message.getText());
@@ -185,7 +181,6 @@ public class ConversationTest extends BaseTest {
             .followingUpWith("correct", "incorrect");
     }
 
-    @Bean
     @MessageHandler(patterns = "(no|no way|nope|not at all|wrong|incorrect)", requiresConversation = true)
     public Response incorrect(Response response) {
       return response
@@ -193,7 +188,6 @@ public class ConversationTest extends BaseTest {
           .followingUpWith("getNameAndAskAge");
     }
 
-    @Bean
     @MessageHandler(patterns = "(yes|yup|correct|perfect|indeed|great)", requiresConversation = true)
     public Response correct(Response response) {
       return response.message("Confirmed!");

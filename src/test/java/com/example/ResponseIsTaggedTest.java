@@ -21,7 +21,6 @@ import org.mockito.Captor;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 import org.springframework.test.context.ContextConfiguration;
 
@@ -80,7 +79,6 @@ public class ResponseIsTaggedTest extends BaseTest{
   @Service
   public static class HelloCommand {
 
-    @Bean
     @MessageHandler(patterns = "hey")
     public Response foo(Message message, Response response) {
       return response.message(message.getText() + " back!");

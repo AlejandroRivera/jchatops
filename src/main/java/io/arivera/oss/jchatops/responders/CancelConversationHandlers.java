@@ -2,7 +2,6 @@ package io.arivera.oss.jchatops.responders;
 
 import io.arivera.oss.jchatops.MessageHandler;
 
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
@@ -14,8 +13,7 @@ public class CancelConversationHandlers {
   /**
    * Message handler for when a conversation needs to be cancelled or reset.
    */
-  @Bean(RESET_BEAN_NAME)
-  @MessageHandler(patterns = RESET_KEY_PHRASE, requiresConversation = true)
+  @MessageHandler(name = RESET_BEAN_NAME, patterns = RESET_KEY_PHRASE, requiresConversation = true)
   public Response cancelConversation(Response response) {
     return response
         .resettingConversation()
