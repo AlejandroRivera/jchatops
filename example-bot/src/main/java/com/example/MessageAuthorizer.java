@@ -8,6 +8,7 @@ import com.github.seratch.jslack.api.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -32,14 +33,14 @@ public class MessageAuthorizer extends MessageFilter {
   private static final Logger LOGGER = LoggerFactory.getLogger(MessageAuthorizer.class);
 
   private final Map<String, User> users;
-  private final ApplicationContext applicationContext;
+  private final BeanDefinitionRegistry beanDefinitionRegistry;
   private Set<String> adminEmails;
 
   @Autowired
-  public MessageAuthorizer(ApplicationContext applicationContext) {
+  public MessageAuthorizer(ApplicationContext applicationContext, BeanDefinitionRegistry beanDefinitionRegistry) {
     super(ORDER);
     this.users = (Map<String, User>) applicationContext.getBean("getUserMap");
-    this.applicationContext = applicationContext;
+    this.beanDefinitionRegistry = beanDefinitionRegistry;
     this.adminEmails = new HashSet<>(Arrays.asList("alejandro@redmart.com"));
   }
 
@@ -62,7 +63,7 @@ public class MessageAuthorizer extends MessageFilter {
       return this.getNextFilter().apply(message);
     } catch (AuthenticationException e) {
       return Optional.of(
-          new Response(message, applicationContext)
+          new Response(message, beanDefinitionRegistry)
               .message("Nuh huh! You can't do that!")
       );
     }

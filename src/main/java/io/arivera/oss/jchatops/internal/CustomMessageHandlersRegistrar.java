@@ -8,11 +8,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanMetadataElement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.type.classreading.MethodMetadataReadingVisitor;
+import org.springframework.core.type.MethodMetadata;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -27,15 +26,14 @@ public class CustomMessageHandlersRegistrar {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CustomMessageHandlersRegistrar.class);
 
-  private final AnnotationConfigEmbeddedWebApplicationContext applicationContext;
+  private final BeanDefinitionRegistry beanDefinitionRegistry;
 
   private final Map<String, MessageHandler.FriendlyMessageHandler> allUserMessageHandlers;
   private final Map<String, MessageHandler.FriendlyMessageHandler> standaloneUserMessageHandlers;
 
   @Autowired
-  public CustomMessageHandlersRegistrar(AnnotationConfigEmbeddedWebApplicationContext applicationContext) {
-    this.applicationContext = applicationContext;
-
+  public CustomMessageHandlersRegistrar(BeanDefinitionRegistry applicationContext) {
+    this.beanDefinitionRegistry = applicationContext;
     this.allUserMessageHandlers = new HashMap<>();
     this.standaloneUserMessageHandlers = new HashMap<>();
   }
@@ -46,16 +44,15 @@ public class CustomMessageHandlersRegistrar {
   }
 
   private void registerMessageHandlers() {
-    ConfigurableListableBeanFactory beanFactory = applicationContext.getBeanFactory();
-    String[] beanCandidates = beanFactory.getBeanDefinitionNames();
+    String[] beanCandidates = beanDefinitionRegistry.getBeanDefinitionNames();
 
     Arrays.stream(beanCandidates)
         .forEach(beanName -> Optional.of(beanName)
-            .map(beanFactory::getBeanDefinition)
+            .map(beanDefinitionRegistry::getBeanDefinition)
             .map(BeanMetadataElement::getSource)
             .filter(Objects::nonNull)
-            .filter(source -> source instanceof MethodMetadataReadingVisitor)
-            .map(source -> (MethodMetadataReadingVisitor) source)
+            .filter(source -> source instanceof MethodMetadata)
+            .map(source -> (MethodMetadata) source)
             .filter(source -> source.getReturnTypeName() != null)
             .filter(source -> {
                   try {
@@ -84,6 +81,7 @@ public class CustomMessageHandlersRegistrar {
             )
         );
   }
+
 
   @Bean
   @Qualifier("all")

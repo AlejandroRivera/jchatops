@@ -4,8 +4,9 @@ import io.arivera.oss.jchatops.filters.BotTaggedMessageRemoverFilter;
 import io.arivera.oss.jchatops.filters.SameChannelResponseFilter;
 import io.arivera.oss.jchatops.filters.TagUserResponseFilter;
 import io.arivera.oss.jchatops.filters.UnrecognizedCommandFilter;
+import io.arivera.oss.jchatops.internal.BeanRegistryConfiguration;
 import io.arivera.oss.jchatops.internal.ConversationManager;
-import io.arivera.oss.jchatops.internal.CustomMessageHandlersTestRegistrar;
+import io.arivera.oss.jchatops.internal.CustomMessageHandlersRegistrar;
 import io.arivera.oss.jchatops.internal.GsonSupplier;
 import io.arivera.oss.jchatops.internal.MessageHandlerAsync;
 import io.arivera.oss.jchatops.internal.MessageHandlerConfiguration;
@@ -37,7 +38,8 @@ import org.springframework.test.context.junit4.SpringRunner;
         UnrecognizedCommandFilter.class,
         SameChannelResponseFilter.class,
         TagUserResponseFilter.class,
-        CustomMessageHandlersTestRegistrar.class,
+        BeanRegistryConfiguration.class,
+        CustomMessageHandlersRegistrar.class,
         MessagesHandler.class,
         SlackGlobalState.class,
         SlackMessageState.class,
