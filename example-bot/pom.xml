@@ -40,6 +40,11 @@
             <version>1.7.22</version>
         </dependency>
         <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.5</version>
+        </dependency>
+        <dependency>
             <!-- Used to manage OS process execution -->
             <groupId>org.zeroturnaround</groupId>
             <artifactId>zt-exec</artifactId>

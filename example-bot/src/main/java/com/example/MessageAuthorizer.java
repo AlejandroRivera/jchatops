@@ -5,12 +5,14 @@ import io.arivera.oss.jchatops.responders.Response;
 
 import com.github.seratch.jslack.api.model.Message;
 import com.github.seratch.jslack.api.model.User;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
@@ -41,7 +43,7 @@ public class MessageAuthorizer extends MessageFilter {
     super(ORDER);
     this.users = (Map<String, User>) applicationContext.getBean("getUserMap");
     this.beanDefinitionRegistry = beanDefinitionRegistry;
-    this.adminEmails = new HashSet<>(Arrays.asList("alejandro@redmart.com"));
+    this.adminEmails = new HashSet<>(Arrays.asList("alejandro2@redmart.com"));
   }
 
   @Override
@@ -61,11 +63,15 @@ public class MessageAuthorizer extends MessageFilter {
     SecurityContextHolder.getContext().setAuthentication(user);
     try {
       return this.getNextFilter().apply(message);
-    } catch (AuthenticationException e) {
-      return Optional.of(
-          new Response(message, beanDefinitionRegistry)
-              .message("Nuh huh! You can't do that!")
-      );
+    } catch (Exception e) {
+      Throwable rootCause = ExceptionUtils.getRootCause(e);
+      if (rootCause instanceof AccessDeniedException) {
+        return Optional.of(
+            new Response(message, beanDefinitionRegistry)
+                .message("Nuh huh! You can't do that!")
+        );
+      }
+      throw e;
     }
   }
 
