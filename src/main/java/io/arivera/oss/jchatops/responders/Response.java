@@ -11,8 +11,9 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Component
 @Scope("prototype")
@@ -21,7 +22,7 @@ public class Response {
   private final Message originalMessage;
   private final BeanDefinitionRegistry beanDefinitionRegistry;
 
-  private List<MessageData> messages;
+  private Stream<Message> messages;
   private boolean resetConversation;
   private List<String> conversationBeansToFollowUpWith = new ArrayList<>(0);
 
@@ -36,24 +37,36 @@ public class Response {
   }
 
   public Response message(List<String> messages) {
-    this.messages = messages.stream()
-        .map(MessageData::new)
-        .collect(Collectors.toList());
-    return this;
+    return this.message(
+        messages.stream()
+            .map(msg -> {
+              Message slackMessage = new Message();
+              slackMessage.setText(msg);
+              return slackMessage;
+            })
+    );
   }
 
-  public Response message(MessageData... message) {
-    this.messages = Arrays.asList(message);
-    return this;
+  public Response message(Message... message) {
+    return this.message(Arrays.stream(message));
   }
 
-  public List<MessageData> getMessages() {
-    return messages;
+  public Response message(Stream<Message> message) {
+    this.messages = message;
+    return this;
   }
 
   public Response resettingConversation() {
     resetConversation = true;
     return this;
+  }
+
+  public Stream<Message> getSlackResponseMessages() {
+    return messages;
+  }
+
+  public Response wrapSlackMessages(Function<Stream<Message>, Stream<Message>> transformer) {
+    return this.message(transformer.apply(getSlackResponseMessages()));
   }
 
   /**
@@ -90,31 +103,4 @@ public class Response {
     return originalMessage;
   }
 
-  public static class MessageData {
-
-    private String text;
-    private String channel;
-
-    public MessageData(String text) {
-      this.text = text;
-    }
-
-    public String getText() {
-      return text;
-    }
-
-    public MessageData setText(String text) {
-      this.text = text;
-      return this;
-    }
-
-    public Optional<String> getChannel() {
-      return Optional.ofNullable(channel);
-    }
-
-    public MessageData setChannel(String channel) {
-      this.channel = channel;
-      return this;
-    }
-  }
 }

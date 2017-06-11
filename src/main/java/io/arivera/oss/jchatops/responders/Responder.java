@@ -15,7 +15,6 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Stream;
 
 @Component
 @Scope("singleton")
@@ -70,25 +69,7 @@ public class Responder {
       setConversationFollowUps(responseContext);
     }
 
-    Stream<Message> slackMessages = responseContext.getMessages().stream()
-        .map(msgData -> {
-          Message slackMessage = new Message();
-          slackMessage.setType("message");
-          slackMessage.setText(msgData.getText());
-          slackMessage.setChannel(
-              msgData.getChannel().orElseThrow(() -> new IllegalStateException("No channel defined."))
-          );
-          return slackMessage;
-        });
-
-    submitRawMessage(slackMessages);
-  }
-
-  /**
-   * Message will be sent "as is".
-   */
-  public void submitRawMessage(Stream<Message> messages) {
-    messages
+    responseContext.getSlackResponseMessages()
         .map(gson::toJson)
         .forEach(json -> {
           LOGGER.debug("Message to be submitted: {}", json);

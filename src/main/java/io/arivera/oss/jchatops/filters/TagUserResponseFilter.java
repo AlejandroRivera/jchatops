@@ -28,13 +28,16 @@ public class TagUserResponseFilter extends MessageFilter {
   @Override
   public Optional<Response> apply(Message message) {
     return getNextFilter().apply(message)
-        .map(response -> {
-          if (messageType != MessageType.PRIVATE) {
-            response.getMessages()
-                .forEach(msgData -> msgData.setText(String.format("<@%s>: %s", message.getUser(), msgData.getText())));
-              }
-              return response;
-            }
+        .map(response -> response
+            .wrapSlackMessages(messageStream ->
+                messageStream.map(msg -> {
+                      if (messageType != MessageType.PRIVATE) {
+                        msg.setText(String.format("<@%s>: %s", message.getUser(), msg.getText()));
+                      }
+                      return msg;
+                    }
+                )
+            )
         );
   }
 

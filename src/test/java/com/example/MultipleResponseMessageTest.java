@@ -109,11 +109,14 @@ public class MultipleResponseMessageTest extends BaseTest {
 
     @MessageHandler(patterns = "channels", messageTypes = MessageType.PRIVATE)
     public Response foo(Message message, Response response) {
-      return response
-          .message(
-              new Response.MessageData("msg1"),
-              new Response.MessageData("msg2").setChannel("channel2")
-          );
+      Message msg1 = new Message();
+      msg1.setText("msg1");
+
+      Message msg2 = new Message();
+      msg2.setText("msg2");
+      msg2.setChannel("channel2");
+
+      return response.message(msg1, msg2);
     }
 
   }

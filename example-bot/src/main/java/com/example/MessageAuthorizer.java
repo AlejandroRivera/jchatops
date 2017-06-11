@@ -84,10 +84,14 @@ public class MessageAuthorizer extends MessageFilter {
   }
 
   private Optional<Response> handleAccessDenied(User userInContext, Message message) {
-    Response.MessageData messageToUser = new Response.MessageData("Nuh huh! You can't do that!");
-    Response.MessageData messageToAdmins = new Response.MessageData(
-        String.format("Not to be a tattletale but '%s' just messaged me saying: '%s'", userInContext.getName(), message.getText()))
-        .setChannel(adminChannel);
+    Message messageToUser = new Message();
+    messageToUser.setText("Nuh huh! You can't do that!");
+
+    Message messageToAdmins = new Message();
+    messageToAdmins.setText(
+        String.format("Not to be a tattletale but '%s' just messaged me saying: '%s'",
+            userInContext.getName(), message.getText()));
+    messageToAdmins.setChannel(adminChannel);
 
     return Optional.of(
         new Response(message, beanDefinitionRegistry)

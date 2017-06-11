@@ -32,17 +32,17 @@ public class SameChannelResponseFilter extends MessageFilter {
   @Override
   public Optional<Response> apply(Message message) {
     return getNextFilter().apply(message)
-        .map(response -> {
-              response.getMessages()
-                  .stream()
-                  .filter(msgData -> !msgData.getChannel().isPresent())
-                  .forEach(responseMessage -> {
+        .map(response -> response.wrapSlackMessages(
+            (msgStream) -> msgStream
+                .map(msg -> {
+                  if (msg.getChannel() == null) {
                     String channel = message.getChannel();
                     LOGGER.debug("Channel to deliver message will be the same as the original incoming message: {}", channel);
-                    responseMessage.setChannel(channel);
-                  });
-              return response;
-            }
+                    msg.setChannel(channel);
+                  }
+                  return msg;
+                })
+            )
         );
   }
 
