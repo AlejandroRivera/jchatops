@@ -3,7 +3,6 @@ package com.example;
 import io.arivera.oss.jchatops.MessageFilter;
 import io.arivera.oss.jchatops.responders.Response;
 
-import com.github.seratch.jslack.api.model.Im;
 import com.github.seratch.jslack.api.model.Message;
 import com.github.seratch.jslack.api.model.User;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -42,18 +41,14 @@ public class MessageAuthorizer extends MessageFilter {
   @Autowired
   public MessageAuthorizer(@Value("${slackbot.example.auth_filter.order:1000}") int order,
                            @Value("${adminEmail}") String adminEmail,
-                           @Value("${authorizedUserEmail}") String authEmail,
+                           @Value("${adminChannel}") String adminChannel,
                            ApplicationContext applicationContext,
                            BeanDefinitionRegistry beanDefinitionRegistry) {
     super(order);
     this.users = (Map<String, User>) applicationContext.getBean("getUserMap");
     this.beanDefinitionRegistry = beanDefinitionRegistry;
-    this.adminEmails = new HashSet<>(Arrays.asList(authEmail));
-    this.adminChannel =
-        ((Map<String, Im>) applicationContext.getBean("getInstantMessagesMap")).values().stream()
-            .filter(im -> users.get(im.getUser()).getProfile().getEmail().equals(adminEmail))
-            .map(Im::getId)
-            .findFirst().get();
+    this.adminEmails = new HashSet<>(Arrays.asList(adminEmail));
+    this.adminChannel = adminChannel;
   }
 
   @Override
