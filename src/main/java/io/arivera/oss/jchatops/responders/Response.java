@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
@@ -20,7 +21,7 @@ public class Response {
   private final Message originalMessage;
   private final BeanDefinitionRegistry beanDefinitionRegistry;
 
-  private Message responseMessage;
+  private List<MessageData> messages;
   private boolean resetConversation;
   private List<String> conversationBeansToFollowUpWith = new ArrayList<>(0);
 
@@ -30,25 +31,24 @@ public class Response {
     this.beanDefinitionRegistry = beanDefinitionRegistry;
   }
 
-  public Response message(String message) {
-    Message response = createResponseMessage(message);
-    return message(response);
+  public Response message(String... messages) {
+    return this.message(Arrays.asList(messages));
   }
 
-  public Message getResponseMessage() {
-    return responseMessage;
-  }
-
-  private Message createResponseMessage(String message) {
-    Message response = new Message();
-    response.setType("message");
-    response.setText(message);
-    return response;
-  }
-
-  public Response message(Message message) {
-    responseMessage = message;
+  public Response message(List<String> messages) {
+    this.messages = messages.stream()
+        .map(MessageData::new)
+        .collect(Collectors.toList());
     return this;
+  }
+
+  public Response message(MessageData... message) {
+    this.messages = Arrays.asList(message);
+    return this;
+  }
+
+  public List<MessageData> getMessages() {
+    return messages;
   }
 
   public Response resettingConversation() {
@@ -88,5 +88,33 @@ public class Response {
 
   public Message getOriginalMessage() {
     return originalMessage;
+  }
+
+  public static class MessageData {
+
+    private String text;
+    private String channel;
+
+    public MessageData(String text) {
+      this.text = text;
+    }
+
+    public String getText() {
+      return text;
+    }
+
+    public MessageData setText(String text) {
+      this.text = text;
+      return this;
+    }
+
+    public Optional<String> getChannel() {
+      return Optional.ofNullable(channel);
+    }
+
+    public MessageData setChannel(String channel) {
+      this.channel = channel;
+      return this;
+    }
   }
 }

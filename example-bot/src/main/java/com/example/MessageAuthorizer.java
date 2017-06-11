@@ -3,6 +3,7 @@ package com.example;
 import io.arivera.oss.jchatops.MessageFilter;
 import io.arivera.oss.jchatops.responders.Response;
 
+import com.github.seratch.jslack.api.model.Im;
 import com.github.seratch.jslack.api.model.Message;
 import com.github.seratch.jslack.api.model.User;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -36,19 +37,41 @@ public class MessageAuthorizer extends MessageFilter {
   private final Map<String, User> users;
   private final BeanDefinitionRegistry beanDefinitionRegistry;
   private Set<String> adminEmails;
+  private String adminChannel;
 
   @Autowired
   public MessageAuthorizer(@Value("${slackbot.example.auth_filter.order:1000}") int order,
+                           @Value("${adminEmail}") String adminEmail,
+                           @Value("${authorizedUserEmail}") String authEmail,
                            ApplicationContext applicationContext,
                            BeanDefinitionRegistry beanDefinitionRegistry) {
     super(order);
     this.users = (Map<String, User>) applicationContext.getBean("getUserMap");
     this.beanDefinitionRegistry = beanDefinitionRegistry;
-    this.adminEmails = new HashSet<>(Arrays.asList("alejandro@redmart.com"));
+    this.adminEmails = new HashSet<>(Arrays.asList(authEmail));
+    this.adminChannel =
+        ((Map<String, Im>) applicationContext.getBean("getInstantMessagesMap")).values().stream()
+            .filter(im -> users.get(im.getUser()).getProfile().getEmail().equals(adminEmail))
+            .map(Im::getId)
+            .findFirst().get();
   }
 
   @Override
   public Optional<Response> apply(Message message) {
+    User userInContext = setAuthContext(message);
+
+    try {
+      return this.getNextFilter().apply(message);
+    } catch (Exception e) {
+      Throwable rootCause = ExceptionUtils.getRootCause(e);
+      if (rootCause instanceof AccessDeniedException) {
+        return handleAccessDenied(userInContext, message);
+      }
+      throw e;
+    }
+  }
+
+  private User setAuthContext(Message message) {
     UsernamePasswordAuthenticationToken user;
 
     User slackUser = users.get(message.getUser());
@@ -62,18 +85,18 @@ public class MessageAuthorizer extends MessageFilter {
 
     LOGGER.info("User auth: {}", user);
     SecurityContextHolder.getContext().setAuthentication(user);
-    try {
-      return this.getNextFilter().apply(message);
-    } catch (Exception e) {
-      Throwable rootCause = ExceptionUtils.getRootCause(e);
-      if (rootCause instanceof AccessDeniedException) {
-        return Optional.of(
-            new Response(message, beanDefinitionRegistry)
-                .message("Nuh huh! You can't do that!")
-        );
-      }
-      throw e;
-    }
+    return slackUser;
+  }
+
+  private Optional<Response> handleAccessDenied(User userInContext, Message message) {
+    Response.MessageData messageToUser = new Response.MessageData("Nuh huh! You can't do that!");
+    Response.MessageData messageToAdmins = new Response.MessageData(
+        String.format("Not to be a tattletale but '%s' just messaged me saying: '%s'", userInContext.getName(), message.getText()))
+        .setChannel(adminChannel);
+
+    return Optional.of(
+        new Response(message, beanDefinitionRegistry)
+            .message(messageToUser, messageToAdmins));
   }
 
 }
