@@ -9,12 +9,12 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -31,7 +31,6 @@ import java.util.Set;
 @Scope("prototype")
 public class MessageAuthorizer extends MessageFilter {
 
-  protected static final int ORDER = 1000;
   private static final Logger LOGGER = LoggerFactory.getLogger(MessageAuthorizer.class);
 
   private final Map<String, User> users;
@@ -39,11 +38,13 @@ public class MessageAuthorizer extends MessageFilter {
   private Set<String> adminEmails;
 
   @Autowired
-  public MessageAuthorizer(ApplicationContext applicationContext, BeanDefinitionRegistry beanDefinitionRegistry) {
-    super(ORDER);
+  public MessageAuthorizer(@Value("${slackbot.example.auth_filter.order:1000}") int order,
+                           ApplicationContext applicationContext,
+                           BeanDefinitionRegistry beanDefinitionRegistry) {
+    super(order);
     this.users = (Map<String, User>) applicationContext.getBean("getUserMap");
     this.beanDefinitionRegistry = beanDefinitionRegistry;
-    this.adminEmails = new HashSet<>(Arrays.asList("alejandro2@redmart.com"));
+    this.adminEmails = new HashSet<>(Arrays.asList("alejandro@redmart.com"));
   }
 
   @Override
