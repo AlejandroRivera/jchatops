@@ -2,6 +2,7 @@ package io.arivera.oss.jchatops.filters;
 
 import io.arivera.oss.jchatops.MessageFilter;
 import io.arivera.oss.jchatops.MessageType;
+import io.arivera.oss.jchatops.internal.ConversationContext;
 import io.arivera.oss.jchatops.responders.Response;
 
 import com.github.seratch.jslack.api.model.Message;
@@ -18,19 +19,25 @@ import java.util.Optional;
 @Scope("prototype")
 public class UnrecognizedCommandFilter extends MessageFilter {
 
+  public static final String UNRECOGNIZED_COMMAND_MESSAGE = "Sorry, I did not understand that.";
   public static final String RESET_KEY_PHRASE = "forget about it";
+  public static final String CONVERSATION_INSTRUCTIONS = " Say '" + RESET_KEY_PHRASE + "' to reset this conversation.";
 
   private static final Logger LOGGER = LoggerFactory.getLogger(UnrecognizedCommandFilter.class);
 
   private final Response response;
   private final MessageType messageType;
+  private final Optional<ConversationContext> conversationContext;
 
   @Autowired
   public UnrecognizedCommandFilter(@Value("${jchatops.filters.unrecognized_command:900}") int order,
-                                   Response response, MessageType messageType) {
+                                   Response response,
+                                   MessageType messageType,
+                                   Optional<ConversationContext> conversationContext) {
     super(order);
     this.response = response;
     this.messageType = messageType;
+    this.conversationContext = conversationContext;
   }
 
   @Override
@@ -40,13 +47,13 @@ public class UnrecognizedCommandFilter extends MessageFilter {
       return maybeResponse;
     } else {
       LOGGER.info("Received message did not match any message handlers.");
-      response.message("Sorry, I did not understand that. Say '" + RESET_KEY_PHRASE + "' to reset this conversation.");
+      String msg = UNRECOGNIZED_COMMAND_MESSAGE;
+      if (conversationContext.isPresent()) {
+        msg += CONVERSATION_INSTRUCTIONS;
+      }
+      response.message(msg);
       return Optional.of(response);
     }
   }
 
-  @Override
-  public int getOrder() {
-    return 0;
-  }
 }
