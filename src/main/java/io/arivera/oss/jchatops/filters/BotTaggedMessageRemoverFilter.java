@@ -21,7 +21,7 @@ public class BotTaggedMessageRemoverFilter extends MessageFilter {
   private final User bot;
 
   @Autowired
-  public BotTaggedMessageRemoverFilter(@Value("${jchatops.filters.unrecognized_command:100}") int order,
+  public BotTaggedMessageRemoverFilter(@Value("${jchatops.filters.unrecognized_command:300}") int order,
                                        MessageType messageType, User bot) {
     super(order);
     this.messageType = messageType;

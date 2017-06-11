@@ -20,7 +20,7 @@ public class TagUserResponseFilter extends MessageFilter {
   private final Map<String, Im> instantMessages;
 
   @Autowired
-  public TagUserResponseFilter(@Value("${jchatops.filters.tag_user:300}") int order,
+  public TagUserResponseFilter(@Value("${jchatops.filters.tag_user:700}") int order,
                                Map<String, Im> instantMessages) {
     super(order);
     this.instantMessages = instantMessages;

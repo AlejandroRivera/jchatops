@@ -11,15 +11,12 @@ import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
-/**
- *
- */
 @Component
 @Scope("singleton")
 public class SameChannelResponseFilter extends MessageFilter {
 
   @Autowired
-  public SameChannelResponseFilter(@Value("${jchatops.filters.same_channel:200}") int order) {
+  public SameChannelResponseFilter(@Value("${jchatops.filters.same_channel:500}") int order) {
     super(order);
   }
 
