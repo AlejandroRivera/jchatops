@@ -1,5 +1,7 @@
 package io.arivera.oss.jchatops.responders;
 
+import io.arivera.oss.jchatops.SlackMessage;
+
 import com.github.seratch.jslack.api.model.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -39,11 +41,12 @@ public class Response {
   public Response message(List<String> messages) {
     return this.message(
         messages.stream()
-            .map(msg -> {
-              Message slackMessage = new Message();
-              slackMessage.setText(msg);
-              return slackMessage;
-            })
+            .map(msg ->
+                SlackMessage.builder()
+                    .setType("message")
+                    .setText(msg)
+                    .build()
+            )
     );
   }
 

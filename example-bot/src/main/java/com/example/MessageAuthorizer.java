@@ -1,6 +1,7 @@
 package com.example;
 
 import io.arivera.oss.jchatops.MessageFilter;
+import io.arivera.oss.jchatops.SlackMessage;
 import io.arivera.oss.jchatops.responders.Response;
 
 import com.github.seratch.jslack.api.model.Message;
@@ -10,7 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
 import org.springframework.security.access.AccessDeniedException;
@@ -34,21 +34,21 @@ public class MessageAuthorizer extends MessageFilter {
   private static final Logger LOGGER = LoggerFactory.getLogger(MessageAuthorizer.class);
 
   private final Map<String, User> users;
-  private final BeanDefinitionRegistry beanDefinitionRegistry;
-  private Set<String> adminEmails;
-  private String adminChannel;
+  private final Set<String> adminEmails;
+  private final String adminChannel;
+  private final Response response;
 
   @Autowired
   public MessageAuthorizer(@Value("${slackbot.example.auth_filter.order:1000}") int order,
                            @Value("${adminEmail}") String adminEmail,
                            @Value("${adminChannel}") String adminChannel,
                            ApplicationContext applicationContext,
-                           BeanDefinitionRegistry beanDefinitionRegistry) {
+                           Response response) {
     super(order);
     this.users = (Map<String, User>) applicationContext.getBean("getUserMap");
-    this.beanDefinitionRegistry = beanDefinitionRegistry;
     this.adminEmails = new HashSet<>(Arrays.asList(adminEmail));
     this.adminChannel = adminChannel;
+    this.response = response;
   }
 
   @Override
@@ -84,18 +84,16 @@ public class MessageAuthorizer extends MessageFilter {
   }
 
   private Optional<Response> handleAccessDenied(User userInContext, Message message) {
-    Message messageToUser = new Message();
-    messageToUser.setText("Nuh huh! You can't do that!");
-
-    Message messageToAdmins = new Message();
-    messageToAdmins.setText(
-        String.format("Not to be a tattletale but '%s' just messaged me saying: '%s'",
-            userInContext.getName(), message.getText()));
-    messageToAdmins.setChannel(adminChannel);
-
     return Optional.of(
-        new Response(message, beanDefinitionRegistry)
-            .message(messageToUser, messageToAdmins));
+        response.message(
+            SlackMessage.builder()
+                .setText("Nuh huh! You can't do that!")
+                .build(),
+            SlackMessage.builder()
+                .setText(String.format("Not to be a tattletale but '%s' just messaged me saying: '%s'",
+                    userInContext.getName(), message.getText()))
+                .setChannel(adminChannel)
+                .build()));
   }
 
 }

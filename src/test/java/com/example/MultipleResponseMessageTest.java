@@ -7,6 +7,7 @@ import static org.mockito.Mockito.verify;
 
 import io.arivera.oss.jchatops.MessageHandler;
 import io.arivera.oss.jchatops.MessageType;
+import io.arivera.oss.jchatops.SlackMessage;
 import io.arivera.oss.jchatops.responders.Response;
 
 import com.github.seratch.jslack.api.methods.response.rtm.RTMStartResponse;
@@ -109,14 +110,15 @@ public class MultipleResponseMessageTest extends BaseTest {
 
     @MessageHandler(patterns = "channels", messageTypes = MessageType.PRIVATE)
     public Response foo(Message message, Response response) {
-      Message msg1 = new Message();
-      msg1.setText("msg1");
-
-      Message msg2 = new Message();
-      msg2.setText("msg2");
-      msg2.setChannel("channel2");
-
-      return response.message(msg1, msg2);
+      return response
+          .message(
+              SlackMessage.builder()
+                  .setText("msg1")
+                  .build(),
+              SlackMessage.builder()
+                  .setText("msg2")
+                  .setChannel("channel2")
+                  .build());
     }
 
   }
