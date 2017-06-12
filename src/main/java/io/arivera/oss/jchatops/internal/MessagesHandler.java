@@ -72,7 +72,10 @@ public class MessagesHandler implements RTMMessageHandler {
     }
 
     Message message = gson.fromJson(jsonObject, Message.class);
-    if (!message.getType().equalsIgnoreCase("message")) {
+    if (message.getType().equalsIgnoreCase("error")) {
+      LOGGER.warn("Message receive is reporting an error: {}", jsonMessage);
+      return;
+    } else if (!message.getType().equalsIgnoreCase("message")) {
       LOGGER.debug("Message received but it's not an actual 'message': {}", jsonMessage);
       return;
     }
