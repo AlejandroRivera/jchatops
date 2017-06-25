@@ -71,7 +71,10 @@ public class Response {
   }
 
   public Response wrapSlackMessages(Function<Stream<Message>, Stream<Message>> transformer) {
-    return this.messages(transformer.apply(getSlackResponseMessages()));
+    Stream<Message> originalMessages = getSlackResponseMessages();
+    Stream<Message> transformedMessages = transformer.apply(originalMessages);
+    this.messages(transformedMessages);
+    return this;
   }
 
   /**
