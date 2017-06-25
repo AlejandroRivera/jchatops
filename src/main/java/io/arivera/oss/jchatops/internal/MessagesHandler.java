@@ -38,7 +38,7 @@ public class MessagesHandler implements RTMMessageHandler {
 
   private final ConversationManager conversationManager;
 
-  private final Responder basicResponder;
+  private final Responder responder;
 
   @Autowired
   public MessagesHandler(ApplicationContext applicationContext,
@@ -46,12 +46,12 @@ public class MessagesHandler implements RTMMessageHandler {
                          Map<String, Im> ims,
                          User bot,
                          ConversationManager conversationManager,
-                         Responder basicResponder) {
+                         Responder responder) {
     this.gson = gsonSupplier.get();
     this.applicationContext = applicationContext;
     this.ims = ims;
     this.bot = bot;
-    this.basicResponder = basicResponder;
+    this.responder = responder;
     this.conversationManager = conversationManager;
   }
 
@@ -95,20 +95,20 @@ public class MessagesHandler implements RTMMessageHandler {
 
     Iterator<MessageFilter> iterator = filters.iterator();
     MessageFilter firstFilter = iterator.next();
-    MessageFilter previousFilter = firstFilter;
+    MessageFilter lastFilter = firstFilter;
     while(iterator.hasNext()) {
       MessageFilter nextFilter = iterator.next();
-      previousFilter.setNextFilter(nextFilter);
-      previousFilter = nextFilter;
+      lastFilter.setNextFilter(nextFilter);
+      lastFilter = nextFilter;
     }
 
-    if (!(previousFilter instanceof MessageRouter)) {
-      throw new IllegalStateException("Last filter in chain was " + previousFilter.getClass().getName()
+    if (!(lastFilter instanceof MessageRouter)) {
+      throw new IllegalStateException("Last filter in chain was " + lastFilter.getClass().getName()
                                       + " and should be: " + MessageRouter.class.getName());
     }
 
     Optional<Response> maybeResponse = firstFilter.apply(message);
-    maybeResponse.ifPresent(basicResponder::submitResponse);
+    maybeResponse.ifPresent(responder::submitResponse);
   }
 
   private MessageType extractMessageType(Message message) {
