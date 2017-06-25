@@ -111,7 +111,7 @@ public class MultipleResponseMessageTest extends BaseTest {
     @MessageHandler(patterns = "channels", messageTypes = MessageType.PRIVATE)
     public Response foo(Message message, Response response) {
       return response
-          .message(
+          .messages(
               SlackMessage.builder()
                   .setText("msg1")
                   .build(),

@@ -41,20 +41,22 @@ public class Response {
   public Response message(List<String> messages) {
     return this.message(
         messages.stream()
-            .map(msg ->
-                SlackMessage.builder()
-                    .setType("message")
-                    .setText(msg)
-                    .build()
-            )
     );
   }
 
-  public Response message(Message... message) {
-    return this.message(Arrays.stream(message));
+  public Response message(Stream<String> messages) {
+    return this.messages(messages.map(msg ->
+        SlackMessage.builder()
+            .setText(msg)
+            .build()
+    ));
   }
 
-  public Response message(Stream<Message> message) {
+  public Response messages(Message... message) {
+    return this.messages(Arrays.stream(message));
+  }
+
+  public Response messages(Stream<Message> message) {
     this.messages = message;
     return this;
   }
@@ -69,7 +71,7 @@ public class Response {
   }
 
   public Response wrapSlackMessages(Function<Stream<Message>, Stream<Message>> transformer) {
-    return this.message(transformer.apply(getSlackResponseMessages()));
+    return this.messages(transformer.apply(getSlackResponseMessages()));
   }
 
   /**

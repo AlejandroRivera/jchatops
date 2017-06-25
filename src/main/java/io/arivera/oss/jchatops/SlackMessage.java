@@ -13,7 +13,7 @@ public class SlackMessage extends Message {
   }
 
   public static class Builder {
-    private String type;
+    private String type = "message";
     private String channel;
     private String user;
     private String text;
