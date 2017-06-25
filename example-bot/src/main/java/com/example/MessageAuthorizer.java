@@ -39,7 +39,7 @@ public class MessageAuthorizer extends MessageFilter {
   private final Response response;
 
   @Autowired
-  public MessageAuthorizer(@Value("${slackbot.example.auth_filter.order:1000}") int order,
+  public MessageAuthorizer(@Value("${slackbot.example.auth_filter.order:2048}") int order,
                            @Value("${adminEmail}") String adminEmail,
                            @Value("${adminChannel}") String adminChannel,
                            ApplicationContext applicationContext,
@@ -85,7 +85,7 @@ public class MessageAuthorizer extends MessageFilter {
 
   private Optional<Response> handleAccessDenied(User userInContext, Message message) {
     return Optional.of(
-        response.message(
+        response.messages(
             SlackMessage.builder()
                 .setText("Nuh huh! You can't do that!")
                 .build(),
