@@ -32,7 +32,7 @@ public class DiscardIncomingMessagesFromBotFilter extends MessageFilter {
   @Override
   public Optional<Response> apply(Message message) {
     if (message.getUser().equals(botUser.getId())) {
-      LOGGER.info("Message received is from this bot itself. It will be ignored.");
+      LOGGER.debug("Message received is from this bot itself. It will be ignored.");
       return Optional.empty();
     }
 
