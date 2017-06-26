@@ -2,6 +2,7 @@ package io.arivera.oss.jchatops.responders;
 
 import io.arivera.oss.jchatops.internal.ConversationContext;
 import io.arivera.oss.jchatops.internal.ConversationManager;
+import io.arivera.oss.jchatops.internal.SlackMessageState;
 
 import com.github.seratch.jslack.api.model.Message;
 import com.github.seratch.jslack.api.rtm.RTMClient;
@@ -26,13 +27,16 @@ public class Responder {
 
   private final RTMClient rtmClient;
   private final Gson gson;
+  private final SlackMessageState slackMessageState;
   private final ConversationManager conversationManager;
 
   @Autowired
   public Responder(RTMClient rtmClient, Gson gson,
+                   SlackMessageState slackMessageState,
                    ConversationManager conversationManager) {
     this.rtmClient = rtmClient;
     this.gson = gson;
+    this.slackMessageState = slackMessageState;
     this.conversationManager = conversationManager;
   }
 
@@ -43,8 +47,8 @@ public class Responder {
   }
 
   private void setConversationFollowUps(Response responseContext) {
-    String user = responseContext.getOriginalMessage().getUser();
-    String channel = responseContext.getOriginalMessage().getChannel();
+    String user = getOriginalMessage().getUser();
+    String channel = getOriginalMessage().getChannel();
 
     ConversationContext context = conversationManager.getConversation(user, channel)
         .orElse(new ConversationContext());
@@ -58,11 +62,13 @@ public class Responder {
   }
 
   /**
-   * Submits the response.
+   * Submits the response to Slack.
+   *
+   * <p>Converts each {@link Message} to JSON and submits it back using {@link RTMClient#sendMessage(String)}</p>
    */
   public void submitResponse(Response responseContext) {
     if (responseContext.shouldResetConversation()) {
-      resetConversation(responseContext.getOriginalMessage());
+      resetConversation(getOriginalMessage());
     }
 
     if (!responseContext.getConversationBeansToFollowUpWith().isEmpty()) {
@@ -77,4 +83,7 @@ public class Responder {
         });
   }
 
+  private Message getOriginalMessage() {
+    return slackMessageState.getMessage();
+  }
 }

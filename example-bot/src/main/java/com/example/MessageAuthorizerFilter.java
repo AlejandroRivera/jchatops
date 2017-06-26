@@ -10,8 +10,8 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -23,37 +23,36 @@ import org.springframework.stereotype.Component;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
 @Component
 @Scope("prototype")
-public class MessageAuthorizer extends MessageFilter {
+public class MessageAuthorizerFilter extends MessageFilter {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(MessageAuthorizer.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(MessageAuthorizerFilter.class);
 
-  private final Map<String, User> users;
   private final Set<String> adminEmails;
   private final String adminChannel;
+  private final User sender;
   private final Response response;
 
   @Autowired
-  public MessageAuthorizer(@Value("${slackbot.example.auth_filter.order:2048}") int order,
-                           @Value("${adminEmail}") String adminEmail,
-                           @Value("${adminChannel}") String adminChannel,
-                           ApplicationContext applicationContext,
-                           Response response) {
+  public MessageAuthorizerFilter(@Value("${slackbot.example.auth_filter.order:2048}") int order,
+                                 @Value("${adminEmail}") String adminEmail,
+                                 @Value("${adminChannel}") String adminChannel,
+                                 @Qualifier("messageGraph") User sender,
+                                 Response response) {
     super(order);
-    this.users = (Map<String, User>) applicationContext.getBean("getUserMap");
     this.adminEmails = new HashSet<>(Arrays.asList(adminEmail));
     this.adminChannel = adminChannel;
+    this.sender = sender;
     this.response = response;
   }
 
   @Override
   public Optional<Response> apply(Message message) {
-    User userInContext = setAuthContext(message);
+    User userInContext = setAuthContext();
 
     try {
       return this.getNextFilter().apply(message);
@@ -66,21 +65,20 @@ public class MessageAuthorizer extends MessageFilter {
     }
   }
 
-  private User setAuthContext(Message message) {
+  private User setAuthContext() {
     UsernamePasswordAuthenticationToken user;
 
-    User slackUser = users.get(message.getUser());
-    if (adminEmails.contains(slackUser.getProfile().getEmail())) {
+    if (adminEmails.contains(sender.getProfile().getEmail())) {
       List<GrantedAuthority> grantedAuthorities = AuthorityUtils.commaSeparatedStringToAuthorityList("ROLE_ADMIN");
-      user = new UsernamePasswordAuthenticationToken(slackUser, "N/A", grantedAuthorities);
+      user = new UsernamePasswordAuthenticationToken(sender, "N/A", grantedAuthorities);
     } else {
       List<GrantedAuthority> grantedAuthorities = AuthorityUtils.commaSeparatedStringToAuthorityList("ROLE_NONE");
-      user = new UsernamePasswordAuthenticationToken(slackUser, "N/A", grantedAuthorities);
+      user = new UsernamePasswordAuthenticationToken(sender, "N/A", grantedAuthorities);
     }
 
     LOGGER.info("User auth: {}", user);
     SecurityContextHolder.getContext().setAuthentication(user);
-    return slackUser;
+    return sender;
   }
 
   private Optional<Response> handleAccessDenied(User userInContext, Message message) {

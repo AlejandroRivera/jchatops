@@ -13,7 +13,7 @@ import io.arivera.oss.jchatops.internal.MessageHandlerAsync;
 import io.arivera.oss.jchatops.internal.MessageHandlerConfiguration;
 import io.arivera.oss.jchatops.internal.MessageRouter;
 import io.arivera.oss.jchatops.internal.MessagesHandler;
-import io.arivera.oss.jchatops.internal.SlackGlobalState;
+import io.arivera.oss.jchatops.internal.SlackBotState;
 import io.arivera.oss.jchatops.internal.SlackMessageState;
 import io.arivera.oss.jchatops.internal.SlackRealTimeMessagingMock;
 import io.arivera.oss.jchatops.responders.CancelConversationHandlers;
@@ -43,7 +43,7 @@ import org.springframework.test.context.junit4.SpringRunner;
         BeanRegistryConfiguration.class,
         CustomMessageHandlersRegistrar.class,
         MessagesHandler.class,
-        SlackGlobalState.class,
+        SlackBotState.class,
         SlackMessageState.class,
         GsonSupplier.class,
     }

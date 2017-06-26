@@ -8,6 +8,7 @@ import com.github.seratch.jslack.api.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -24,7 +25,7 @@ public class DiscardIncomingMessagesFromBotFilter extends MessageFilter {
 
   @Autowired
   public DiscardIncomingMessagesFromBotFilter(@Value("${jchatops.filters.tag_user:100}") int order,
-                                              User botUser) {
+                                              @Qualifier("bot") User botUser) {
     super(order);
     this.botUser = botUser;
   }

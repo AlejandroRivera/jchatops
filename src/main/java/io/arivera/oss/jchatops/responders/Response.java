@@ -21,7 +21,6 @@ import java.util.stream.Stream;
 @Scope("prototype")
 public class Response {
 
-  private final Message originalMessage;
   private final BeanDefinitionRegistry beanDefinitionRegistry;
 
   private Stream<Message> messages;
@@ -29,8 +28,7 @@ public class Response {
   private List<String> conversationBeansToFollowUpWith = new ArrayList<>(0);
 
   @Autowired
-  public Response(Message originalMessage, BeanDefinitionRegistry beanDefinitionRegistry) {
-    this.originalMessage = originalMessage;
+  public Response(BeanDefinitionRegistry beanDefinitionRegistry) {
     this.beanDefinitionRegistry = beanDefinitionRegistry;
   }
 
@@ -71,8 +69,8 @@ public class Response {
   }
 
   public Response wrapSlackMessages(Function<Stream<Message>, Stream<Message>> transformer) {
-    Stream<Message> originalMessages = getSlackResponseMessages();
-    Stream<Message> transformedMessages = transformer.apply(originalMessages);
+    Stream<Message> originalResponseMessages = getSlackResponseMessages();
+    Stream<Message> transformedMessages = transformer.apply(originalResponseMessages);
     this.messages(transformedMessages);
     return this;
   }
@@ -105,10 +103,6 @@ public class Response {
 
   public List<String> getConversationBeansToFollowUpWith() {
     return conversationBeansToFollowUpWith;
-  }
-
-  public Message getOriginalMessage() {
-    return originalMessage;
   }
 
 }
