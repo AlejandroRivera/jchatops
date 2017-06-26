@@ -1,6 +1,6 @@
 package io.arivera.oss.jchatops.internal;
 
-import io.arivera.oss.jchatops.MessageHandler;
+import io.arivera.oss.jchatops.annotations.MessageHandler;
 import io.arivera.oss.jchatops.responders.Response;
 
 import org.slf4j.Logger;

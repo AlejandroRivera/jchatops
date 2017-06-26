@@ -2,6 +2,7 @@ package com.example;
 
 import io.arivera.oss.jchatops.MessageFilter;
 import io.arivera.oss.jchatops.SlackMessage;
+import io.arivera.oss.jchatops.annotations.MessageGraph;
 import io.arivera.oss.jchatops.responders.Response;
 
 import com.github.seratch.jslack.api.model.Message;
@@ -10,7 +11,6 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.security.access.AccessDeniedException;
@@ -41,7 +41,7 @@ public class MessageAuthorizerFilter extends MessageFilter {
   public MessageAuthorizerFilter(@Value("${slackbot.example.auth_filter.order:2048}") int order,
                                  @Value("${adminEmail}") String adminEmail,
                                  @Value("${adminChannel}") String adminChannel,
-                                 @Qualifier("messageGraph") User sender,
+                                 @MessageGraph User sender,
                                  Response response) {
     super(order);
     this.adminEmails = new HashSet<>(Arrays.asList(adminEmail));

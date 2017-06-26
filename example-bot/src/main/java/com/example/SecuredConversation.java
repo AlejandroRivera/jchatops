@@ -1,7 +1,7 @@
 package com.example;
 
-import io.arivera.oss.jchatops.MessageHandler;
 import io.arivera.oss.jchatops.MessageType;
+import io.arivera.oss.jchatops.annotations.MessageHandler;
 import io.arivera.oss.jchatops.responders.Response;
 
 import org.apache.commons.lang3.RandomStringUtils;

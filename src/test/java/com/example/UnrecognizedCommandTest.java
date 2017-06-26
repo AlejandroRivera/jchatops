@@ -4,7 +4,7 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.verify;
 
-import io.arivera.oss.jchatops.MessageHandler;
+import io.arivera.oss.jchatops.annotations.MessageHandler;
 import io.arivera.oss.jchatops.filters.UnrecognizedCommandFilter;
 import io.arivera.oss.jchatops.responders.Response;
 

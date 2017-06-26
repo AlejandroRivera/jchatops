@@ -1,4 +1,6 @@
-package io.arivera.oss.jchatops;
+package io.arivera.oss.jchatops.annotations;
+
+import io.arivera.oss.jchatops.MessageType;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Scope;

@@ -1,15 +1,15 @@
 package io.arivera.oss.jchatops.internal;
 
 import io.arivera.oss.jchatops.ConversationData;
-import io.arivera.oss.jchatops.MessageHandler;
 import io.arivera.oss.jchatops.MessageType;
+import io.arivera.oss.jchatops.annotations.MessageGraph;
+import io.arivera.oss.jchatops.annotations.MessageHandler;
 
 import com.github.seratch.jslack.api.model.Channel;
 import com.github.seratch.jslack.api.model.Group;
 import com.github.seratch.jslack.api.model.Im;
 import com.github.seratch.jslack.api.model.Message;
 import com.github.seratch.jslack.api.model.User;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
@@ -37,7 +37,7 @@ public class SlackMessageState {
    */
   @Bean
   @Scope("prototype")
-  @Qualifier("messageGraph")
+  @MessageGraph
   public Message getMessage() {
     return currentMessage.get();
   }
@@ -51,7 +51,7 @@ public class SlackMessageState {
    */
   @Bean
   @Scope("prototype")
-  @Qualifier("messageGraph")
+  @MessageGraph
   public MessageType messageType() {
     return currentMessageType.get();
   }
@@ -65,7 +65,7 @@ public class SlackMessageState {
    */
   @Bean
   @Scope("prototype")
-  @Qualifier("messageGraph")
+  @MessageGraph
   public Matcher matchedPattern() {
     return currentMatchedPattern.get();
   }
@@ -77,7 +77,7 @@ public class SlackMessageState {
    */
   @Bean
   @Scope("prototype")
-  @Qualifier("messageGraph")
+  @MessageGraph
   public User messageSender() {
     return currentSender.get();
   }
@@ -91,7 +91,7 @@ public class SlackMessageState {
    */
   @Bean
   @Scope("prototype")
-  @Qualifier("messageGraph")
+  @MessageGraph
   public Channel channel() {
     return currentChannel.get();
   }
@@ -105,7 +105,7 @@ public class SlackMessageState {
    */
   @Bean
   @Scope("prototype")
-  @Qualifier("messageGraph")
+  @MessageGraph
   public Im instantMessage() {
     return currentInstantMessage.get();
   }
@@ -119,21 +119,21 @@ public class SlackMessageState {
    */
   @Bean
   @Scope("prototype")
-  @Qualifier("messageGraph")
+  @MessageGraph
   public Group groupChat() {
     return currentGroup.get();
   }
 
   @Bean
   @Scope("prototype")
-  @Qualifier("messageGraph")
+  @MessageGraph
   public ConversationData conversationData() {
     return currentConversationData.get();
   }
 
   @Bean
   @Scope("prototype")
-  @Qualifier("messageGraph")
+  @MessageGraph
   public ConversationContext conversationContext() {
     return currentConversationContext.get();
   }

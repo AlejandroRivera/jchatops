@@ -1,6 +1,6 @@
 package io.arivera.oss.jchatops.responders;
 
-import io.arivera.oss.jchatops.MessageHandler;
+import io.arivera.oss.jchatops.annotations.MessageHandler;
 
 import org.springframework.context.annotation.Configuration;
 

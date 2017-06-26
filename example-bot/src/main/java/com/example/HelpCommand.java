@@ -1,6 +1,6 @@
 package com.example;
 
-import io.arivera.oss.jchatops.MessageHandler;
+import io.arivera.oss.jchatops.annotations.MessageHandler;
 import io.arivera.oss.jchatops.responders.Response;
 
 import com.github.seratch.jslack.api.model.Message;

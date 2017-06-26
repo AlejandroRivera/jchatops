@@ -6,8 +6,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import io.arivera.oss.jchatops.ConversationData;
-import io.arivera.oss.jchatops.MessageHandler;
 import io.arivera.oss.jchatops.MessageType;
+import io.arivera.oss.jchatops.annotations.MessageHandler;
 import io.arivera.oss.jchatops.responders.CancelConversationHandlers;
 import io.arivera.oss.jchatops.responders.Response;
 

@@ -2,6 +2,8 @@ package io.arivera.oss.jchatops.internal;
 
 import io.arivera.oss.jchatops.MessageFilter;
 import io.arivera.oss.jchatops.MessageType;
+import io.arivera.oss.jchatops.annotations.Bot;
+import io.arivera.oss.jchatops.annotations.BotGraph;
 import io.arivera.oss.jchatops.responders.Responder;
 import io.arivera.oss.jchatops.responders.Response;
 
@@ -16,7 +18,6 @@ import com.google.gson.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
 import org.springframework.core.annotation.AnnotationAwareOrderComparator;
@@ -49,15 +50,15 @@ public class MessagesHandler implements RTMMessageHandler {
 
   @Autowired
   public MessagesHandler(ApplicationContext applicationContext,
-                         GsonSupplier gsonSupplier,
-                         @Qualifier("bot") User bot,
-                         @Qualifier("botGraph") Map<String, Im> ims,
-                         @Qualifier("botGraph") Map<String, Channel> channels,
-                         @Qualifier("botGraph") Map<String, Group> groups,
-                         @Qualifier("botGraph") Map<String, User> users,
+                         Gson gson,
+                         @Bot User bot,
+                         @BotGraph Map<String, Im> ims,
+                         @BotGraph Map<String, Channel> channels,
+                         @BotGraph Map<String, Group> groups,
+                         @BotGraph Map<String, User> users,
                          ConversationManager conversationManager,
                          Responder responder) {
-    this.gson = gsonSupplier.get();
+    this.gson = gson;
     this.applicationContext = applicationContext;
     this.ims = ims;
     this.channels = channels;

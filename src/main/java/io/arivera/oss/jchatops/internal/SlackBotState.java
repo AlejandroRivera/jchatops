@@ -1,12 +1,14 @@
 package io.arivera.oss.jchatops.internal;
 
+import io.arivera.oss.jchatops.annotations.Bot;
+import io.arivera.oss.jchatops.annotations.BotGraph;
+
 import com.github.seratch.jslack.api.methods.response.rtm.RTMStartResponse;
 import com.github.seratch.jslack.api.model.Channel;
 import com.github.seratch.jslack.api.model.Group;
 import com.github.seratch.jslack.api.model.Im;
 import com.github.seratch.jslack.api.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
@@ -30,7 +32,7 @@ public class SlackBotState {
    */
   @Bean
   @Scope("singleton")
-  @Qualifier("bot")
+  @Bot
   public User getBot() {
     return rtmStartResponse.getSelf();
   }
@@ -40,7 +42,7 @@ public class SlackBotState {
    */
   @Bean
   @Scope("singleton")
-  @Qualifier("botGraph")
+  @BotGraph
   public Map<String, Channel> getChannelsMap() {
     return rtmStartResponse.getChannels().stream()
         .collect(Collectors.toMap(Channel::getId, channel -> channel));
@@ -51,7 +53,7 @@ public class SlackBotState {
    */
   @Bean
   @Scope("singleton")
-  @Qualifier("botGraph")
+  @BotGraph
   public Map<String, User> getUserMap() {
     return rtmStartResponse.getUsers().stream()
         .collect(Collectors.toMap(User::getId, user -> user));
@@ -62,7 +64,7 @@ public class SlackBotState {
    */
   @Bean
   @Scope("singleton")
-  @Qualifier("botGraph")
+  @BotGraph
   public Map<String, Im> getInstantMessagesMap() {
     return rtmStartResponse.getIms().stream()
         .collect(Collectors.toMap(Im::getId, im -> im));
@@ -73,7 +75,7 @@ public class SlackBotState {
    */
   @Bean
   @Scope("singleton")
-  @Qualifier("botGraph")
+  @BotGraph
   public Map<String, Group> getGroupChatsMap() {
     return rtmStartResponse.getGroups().stream()
         .collect(Collectors.toMap(Group::getId, group -> group));

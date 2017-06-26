@@ -2,12 +2,12 @@ package io.arivera.oss.jchatops.filters;
 
 import io.arivera.oss.jchatops.MessageFilter;
 import io.arivera.oss.jchatops.MessageType;
+import io.arivera.oss.jchatops.annotations.Bot;
 import io.arivera.oss.jchatops.responders.Response;
 
 import com.github.seratch.jslack.api.model.Message;
 import com.github.seratch.jslack.api.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -23,7 +23,7 @@ public class BotTaggedMessageRemoverFilter extends MessageFilter {
 
   @Autowired
   public BotTaggedMessageRemoverFilter(@Value("${jchatops.filters.unrecognized_command:300}") int order,
-                                       @Qualifier("bot") User bot,
+                                       @Bot User bot,
                                        MessageType messageType
   ) {
     super(order);

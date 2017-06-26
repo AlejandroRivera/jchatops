@@ -3,8 +3,8 @@ package io.arivera.oss.jchatops.internal;
 import static io.arivera.oss.jchatops.misc.MoreCollectors.toLinkedMap;
 
 import io.arivera.oss.jchatops.MessageFilter;
-import io.arivera.oss.jchatops.MessageHandler;
 import io.arivera.oss.jchatops.MessageType;
+import io.arivera.oss.jchatops.annotations.MessageHandler;
 import io.arivera.oss.jchatops.responders.Response;
 
 import com.github.seratch.jslack.api.model.Message;

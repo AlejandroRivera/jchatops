@@ -1,6 +1,7 @@
 package io.arivera.oss.jchatops.filters;
 
 import io.arivera.oss.jchatops.MessageFilter;
+import io.arivera.oss.jchatops.annotations.Bot;
 import io.arivera.oss.jchatops.responders.Response;
 
 import com.github.seratch.jslack.api.model.Message;
@@ -8,7 +9,6 @@ import com.github.seratch.jslack.api.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -25,7 +25,7 @@ public class DiscardIncomingMessagesFromBotFilter extends MessageFilter {
 
   @Autowired
   public DiscardIncomingMessagesFromBotFilter(@Value("${jchatops.filters.tag_user:100}") int order,
-                                              @Qualifier("bot") User botUser) {
+                                              @Bot User botUser) {
     super(order);
     this.botUser = botUser;
   }
