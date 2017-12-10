@@ -48,7 +48,6 @@ public class Responder {
     Optional<String> thread = Optional.ofNullable(originalMessage.getThreadTs())
         .filter(s -> !s.equalsIgnoreCase(originalMessage.getTs()));
 
-    // TODO: Reset conversations in Threads too!
     conversationManager.clearConversation(user, channel, thread);
   }
 
