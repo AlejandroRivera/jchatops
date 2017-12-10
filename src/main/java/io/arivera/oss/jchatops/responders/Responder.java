@@ -41,32 +41,6 @@ public class Responder {
     this.conversationManager = conversationManager;
   }
 
-  private void resetConversation(Message originalMessage) {
-    String user = originalMessage.getUser();
-    String channel = originalMessage.getChannel();
-
-    Optional<String> thread = Optional.ofNullable(originalMessage.getThreadTs())
-        .filter(s -> !s.equalsIgnoreCase(originalMessage.getTs()));
-
-    conversationManager.clearConversation(user, channel, thread);
-  }
-
-  private void setConversationFollowUps(Response responseContext) {
-    Message originalMessage = getOriginalMessage();
-
-    ConversationManager.ConversationKey key = new ConversationManager.ConversationKey(
-        originalMessage.getUser(), originalMessage.getChannel(), Optional.empty());
-
-    ConversationContext context = conversationManager.getConversation(originalMessage).orElse(new ConversationContext(key));
-
-    List<String> beansToFollowUpWith = new ArrayList<>();
-    beansToFollowUpWith.addAll(responseContext.getConversationBeansToFollowUpWith());
-    beansToFollowUpWith.addAll(Arrays.asList(SYSTEM_CONVERSATION_BEANS));
-
-    context.setNextConversationBeanNames(beansToFollowUpWith);
-    conversationManager.saveConversation(originalMessage, responseContext, context);
-  }
-
   /**
    * Submits the response to Slack.
    *
@@ -91,5 +65,31 @@ public class Responder {
 
   private Message getOriginalMessage() {
     return slackMessageState.getMessage();
+  }
+
+  private void resetConversation(Message originalMessage) {
+    String user = originalMessage.getUser();
+    String channel = originalMessage.getChannel();
+
+    Optional<String> thread = Optional.ofNullable(originalMessage.getThreadTs())
+        .filter(s -> !s.equalsIgnoreCase(originalMessage.getTs()));
+
+    conversationManager.clearConversation(user, channel, thread);
+  }
+
+  private void setConversationFollowUps(Response responseContext) {
+    Message originalMessage = getOriginalMessage();
+
+    ConversationManager.ConversationKey key = new ConversationManager.ConversationKey(
+        originalMessage.getUser(), originalMessage.getChannel(), Optional.empty());
+
+    ConversationContext context = conversationManager.getConversation(originalMessage).orElse(new ConversationContext(key));
+
+    List<String> beansToFollowUpWith = new ArrayList<>();
+    beansToFollowUpWith.addAll(responseContext.getConversationBeansToFollowUpWith());
+    beansToFollowUpWith.addAll(Arrays.asList(SYSTEM_CONVERSATION_BEANS));
+
+    context.setNextConversationBeanNames(beansToFollowUpWith);
+    conversationManager.saveConversation(originalMessage, responseContext, context);
   }
 }
