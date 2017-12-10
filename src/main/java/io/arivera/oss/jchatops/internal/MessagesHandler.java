@@ -113,7 +113,6 @@ public class MessagesHandler implements RTMMessageHandler {
 
     Optional<ConversationContext> conversation = conversationManager.getConversation(message);
     SlackMessageState.currentConversationContext.set(conversation.orElse(null));
-    SlackMessageState.currentConversationData.set(conversation.map(ConversationContext::getData).orElse(null));
 
     List<MessageFilter> filters = new ArrayList<>(applicationContext.getBeansOfType(MessageFilter.class).values());
     filters.sort(AnnotationAwareOrderComparator.INSTANCE);

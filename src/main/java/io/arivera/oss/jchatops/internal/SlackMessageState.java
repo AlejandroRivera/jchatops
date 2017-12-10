@@ -26,7 +26,6 @@ public class SlackMessageState {
   static ThreadLocal<Group> currentGroup = ThreadLocal.withInitial(() -> null);
   static ThreadLocal<Channel> currentChannel = ThreadLocal.withInitial(() -> null);
   static ThreadLocal<Matcher> currentMatchedPattern = ThreadLocal.withInitial(() -> null);
-  static ThreadLocal<ConversationData> currentConversationData = ThreadLocal.withInitial(() -> null);
   static ThreadLocal<ConversationContext> currentConversationContext = ThreadLocal.withInitial(() -> null);
 
   /**
@@ -124,15 +123,15 @@ public class SlackMessageState {
   @Bean
   @Scope("prototype")
   @MessageGraph
-  public ConversationData conversationData() {
-    return currentConversationData.get();
+  public ConversationContext conversationContext() {
+    return currentConversationContext.get();
   }
 
   @Bean
   @Scope("prototype")
   @MessageGraph
-  public ConversationContext conversationContext() {
-    return currentConversationContext.get();
+  public ConversationData conversationData() {
+    return conversationContext().getData();
   }
 
 }
