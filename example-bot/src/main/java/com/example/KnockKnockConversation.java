@@ -26,6 +26,7 @@ public class KnockKnockConversation {
     @MessageHandler(name = "punch_line", patterns = ".*", requiresConversation = true)
     public Response whatJollyGoodFun(Message msg, Response response) {
       return response.message(msg.getText() + "! ha-ha!")
+          .alsoPostToMainConversation()
           .resettingConversation();
     }
 

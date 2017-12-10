@@ -28,6 +28,7 @@ public class Response {
   private boolean resetConversation;
   private List<String> conversationBeansToFollowUpWith = new ArrayList<>(0);
   private Optional<Boolean> asThread = Optional.empty();
+  private boolean alsoPostToMainConversation;
 
   @Autowired
   public Response(BeanDefinitionRegistry beanDefinitionRegistry) {
@@ -55,6 +56,9 @@ public class Response {
     return this;
   }
 
+  /**
+   * Indicates that the current conversation is considered finished and cached data can be cleared.
+   */
   public Response resettingConversation() {
     resetConversation = true;
     return this;
@@ -101,10 +105,22 @@ public class Response {
     return conversationBeansToFollowUpWith;
   }
 
+  /**
+   * @see #inThread(boolean)
+   */
   public Response inThread() {
     return inThread(true);
   }
 
+  /**
+   * Post the message in a thread instead of in the main conversation (channel, group, ...).
+   *
+   * <p>By default, messages received in a thread will be responded in the same thread. There's no need to use this method
+   * for those scenarios. You should use this if you want to start a new thread instead
+   *
+   * @see #alsoPostToMainConversation
+   * @see #alsoPostToMainConversation(boolean)
+   */
   public Response inThread(boolean enabled) {
     this.asThread = Optional.of(enabled);
     return this;
@@ -112,5 +128,25 @@ public class Response {
 
   public Optional<Boolean> shouldRespondInThread() {
     return asThread;
+  }
+
+  /**
+   * @see #alsoPostToMainConversation(boolean)
+   */
+  public Response alsoPostToMainConversation() {
+    return alsoPostToMainConversation(true);
+  }
+
+  /**
+   * When a message is posted as part of a thread, this can be used to signal that the same message should be made visible to
+   * everyone in the main conversation.
+   */
+  public Response alsoPostToMainConversation(boolean enabled) {
+    this.alsoPostToMainConversation = enabled;
+    return this;
+  }
+
+  public boolean shouldBroadcastInChannel() {
+    return this.alsoPostToMainConversation;
   }
 }

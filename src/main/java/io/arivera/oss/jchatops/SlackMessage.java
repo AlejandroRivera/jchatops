@@ -6,7 +6,23 @@ import com.github.seratch.jslack.api.model.Reaction;
 
 import java.util.List;
 
+/**
+ * An extension of the JSlack {@link Message} class.
+ *
+ * <p>It's particularly useful for adding support for fields that aren't available in JSlack yet.
+ */
 public class SlackMessage extends Message {
+
+  boolean replyBroadcast;
+
+  public boolean isReplyBroadcast() {
+    return replyBroadcast;
+  }
+
+  public SlackMessage setReplyBroadcast(boolean replyBroadcast) {
+    this.replyBroadcast = replyBroadcast;
+    return this;
+  }
 
   public static Builder builder() {
     return new Builder();
