@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 @Scope("singleton")
@@ -43,22 +44,28 @@ public class Responder {
   private void resetConversation(Message originalMessage) {
     String user = originalMessage.getUser();
     String channel = originalMessage.getChannel();
-    conversationManager.clearConversation(user, channel);
+
+    Optional<String> thread = Optional.ofNullable(originalMessage.getThreadTs())
+        .filter(s -> !s.equalsIgnoreCase(originalMessage.getTs()));
+
+    // TODO: Reset conversations in Threads too!
+    conversationManager.clearConversation(user, channel, thread);
   }
 
   private void setConversationFollowUps(Response responseContext) {
-    String user = getOriginalMessage().getUser();
-    String channel = getOriginalMessage().getChannel();
+    Message originalMessage = getOriginalMessage();
 
-    ConversationContext context = conversationManager.getConversation(user, channel)
-        .orElse(new ConversationContext());
+    ConversationManager.ConversationKey key = new ConversationManager.ConversationKey(
+        originalMessage.getUser(), originalMessage.getChannel(), Optional.empty());
+
+    ConversationContext context = conversationManager.getConversation(originalMessage).orElse(new ConversationContext(key));
 
     List<String> beansToFollowUpWith = new ArrayList<>();
     beansToFollowUpWith.addAll(responseContext.getConversationBeansToFollowUpWith());
     beansToFollowUpWith.addAll(Arrays.asList(SYSTEM_CONVERSATION_BEANS));
 
     context.setNextConversationBeanNames(beansToFollowUpWith);
-    conversationManager.saveConversation(user, channel, context);
+    conversationManager.saveConversation(originalMessage, responseContext, context);
   }
 
   /**

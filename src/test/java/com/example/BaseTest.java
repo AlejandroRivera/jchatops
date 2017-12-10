@@ -3,6 +3,7 @@ package com.example;
 import io.arivera.oss.jchatops.filters.BotTaggedMessageRemoverFilter;
 import io.arivera.oss.jchatops.filters.SameChannelResponseFilter;
 import io.arivera.oss.jchatops.filters.TagUserResponseFilter;
+import io.arivera.oss.jchatops.filters.ThreadedResponseFilter;
 import io.arivera.oss.jchatops.filters.UncaughtExceptionFilter;
 import io.arivera.oss.jchatops.filters.UnrecognizedCommandFilter;
 import io.arivera.oss.jchatops.internal.BeanRegistryConfiguration;
@@ -39,6 +40,7 @@ import org.springframework.test.context.junit4.SpringRunner;
         BotTaggedMessageRemoverFilter.class,
         UnrecognizedCommandFilter.class,
         SameChannelResponseFilter.class,
+        ThreadedResponseFilter.class,
         TagUserResponseFilter.class,
         BeanRegistryConfiguration.class,
         CustomMessageHandlersRegistrar.class,

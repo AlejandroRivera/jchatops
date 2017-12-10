@@ -79,9 +79,15 @@ public class MessagesHandler implements RTMMessageHandler {
   }
 
   private void doHandle(String jsonMessage) {
+    LOGGER.debug("Message JSON: {}", jsonMessage);
+
     JsonObject jsonObject = gson.fromJson(jsonMessage, JsonObject.class);
     if (jsonObject.get("type") == null) {
       LOGGER.debug("Message received without 'type': {}", jsonMessage);
+      return;
+    } else if (jsonObject.get("subtype") != null) {
+      // See "Message subtypes" in https://api.slack.com/events/message
+      LOGGER.debug("Ignoring message since is of a subtype of message.");
       return;
     }
 
@@ -105,7 +111,7 @@ public class MessagesHandler implements RTMMessageHandler {
     SlackMessageState.currentInstantMessage.set(ims.get(message.getChannel()));
     SlackMessageState.currentGroup.set(groups.get(message.getChannel()));
 
-    Optional<ConversationContext> conversation = conversationManager.getConversation(message.getUser(), message.getChannel());
+    Optional<ConversationContext> conversation = conversationManager.getConversation(message);
     SlackMessageState.currentConversationContext.set(conversation.orElse(null));
     SlackMessageState.currentConversationData.set(conversation.map(ConversationContext::getData).orElse(null));
 

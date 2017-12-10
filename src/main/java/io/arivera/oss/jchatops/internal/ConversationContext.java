@@ -9,9 +9,12 @@ public class ConversationContext {
 
   public ConversationData data = new ConversationData();
 
+  public ConversationManager.ConversationKey conversationKey;
   public List<String> nextConversationBeanNames = new ArrayList<>();
+  private ConversationManager.ConversationKey key;
 
-  public ConversationContext() {
+  public ConversationContext(ConversationManager.ConversationKey key) {
+    this.conversationKey = key;
   }
 
   public ConversationData getData() {
@@ -32,4 +35,11 @@ public class ConversationContext {
     return this;
   }
 
+  public ConversationManager.ConversationKey getConversationKey() {
+    return conversationKey;
+  }
+
+  public void setKey(ConversationManager.ConversationKey key) {
+    this.key = key;
+  }
 }

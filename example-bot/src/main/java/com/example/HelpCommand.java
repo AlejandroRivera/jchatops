@@ -23,6 +23,7 @@ public class HelpCommand {
       return response.message("```\n"
                    + "* Say: 'hello'\n"
                    + "* Say: 'help\n"
+                   + "* Say: 'knock knock\n"
                    + "```");
   }
 

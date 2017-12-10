@@ -1,46 +1,76 @@
 package io.arivera.oss.jchatops.internal;
 
+import io.arivera.oss.jchatops.responders.Response;
+
+import com.github.seratch.jslack.api.model.Message;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Scope("singleton")
 @Component
 public class ConversationManager {
 
-  private Map<ConversationKey, ConversationContext> conversations = new HashMap<>();
+  private Map<ConversationKey, ConversationContext> conversations = new ConcurrentHashMap<>();
 
-  public Optional<ConversationContext> getConversation(String userId, String channel) {
-    return Optional.ofNullable(conversations.get(new ConversationKey(userId, channel)));
+  public Optional<ConversationContext> getConversation(Message message) {
+
+    String user = message.getUser();
+    String channel = message.getChannel();
+    Optional<String> parentThreadId = Optional.ofNullable(message.getThreadTs());
+    ConversationKey threadedConversationKey = new ConversationKey(user, channel, parentThreadId);
+
+    ConversationContext theadedConversationContext = conversations.get(threadedConversationKey);
+    if (theadedConversationContext != null) {
+      return Optional.of(theadedConversationContext);
+    }
+
+    ConversationKey rootConversationKey = new ConversationKey(message.getUser(), message.getChannel(), Optional.empty());
+    ConversationContext conversationContext = conversations.get(rootConversationKey);
+
+    return Optional.ofNullable(conversationContext);
   }
 
-  public void saveConversation(String userId, String channel, ConversationContext context) {
-    conversations.put(new ConversationKey(userId, channel), context);
+  public void saveConversation(Message incomingMessage, Response response, ConversationContext context) {
+    String parentThreadId = null;
+    Boolean forceThread = response.shouldRespondInThread().orElse(false);
+    if (forceThread) {
+      parentThreadId = Optional.ofNullable(incomingMessage.getThreadTs()).orElse(incomingMessage.getTs());
+    } else {
+      if (incomingMessage.getThreadTs() != null) {
+        parentThreadId = incomingMessage.getThreadTs();
+      }
+    }
+
+    ConversationKey previousKey = context.getConversationKey();
+    previousKey.setParentThreadId(Optional.ofNullable(parentThreadId));
+    conversations.put(previousKey, context);
   }
 
-  public void clearConversation(String userId, String channel) {
-    conversations.remove(new ConversationKey(userId, channel));
+  public void clearConversation(String userId, String channel, Optional<String> parentThreadId) {
+    conversations.remove(new ConversationKey(userId, channel, parentThreadId));
   }
 
-  private static class ConversationKey {
-    private String userId;
-    private String channelId;
+  public static class ConversationKey {
 
-    public ConversationKey(String userId, String channelId) {
+    private final String userId;
+    private final String channelId;
+
+    private Optional<String> parentThreadId;
+
+    public ConversationKey(String userId, String channelId, Optional<String> parentThreadId) {
       this.userId = userId;
       this.channelId = channelId;
+      this.parentThreadId = parentThreadId;
     }
 
-    public String getUserId() {
-      return userId;
-    }
-
-    public String getChannelId() {
-      return channelId;
+    public ConversationKey setParentThreadId(Optional<String> parentThreadId) {
+      this.parentThreadId = parentThreadId;
+      return this;
     }
 
     @Override
@@ -53,7 +83,8 @@ public class ConversationManager {
       }
       ConversationKey that = (ConversationKey) other;
       return Objects.equals(userId, that.userId)
-             && Objects.equals(channelId, that.channelId);
+             && Objects.equals(channelId, that.channelId)
+             && Objects.equals(parentThreadId, that.parentThreadId);
     }
 
     @Override
@@ -61,4 +92,6 @@ public class ConversationManager {
       return Objects.hash(userId, channelId);
     }
   }
+
+
 }

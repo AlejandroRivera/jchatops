@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -26,6 +27,7 @@ public class Response {
   private Stream<Message> messages;
   private boolean resetConversation;
   private List<String> conversationBeansToFollowUpWith = new ArrayList<>(0);
+  private Optional<Boolean> asThread = Optional.empty();
 
   @Autowired
   public Response(BeanDefinitionRegistry beanDefinitionRegistry) {
@@ -105,4 +107,16 @@ public class Response {
     return conversationBeansToFollowUpWith;
   }
 
+  public Response inThread() {
+    return inThread(true);
+  }
+
+  public Response inThread(boolean enabled) {
+    this.asThread = Optional.of(enabled);
+    return this;
+  }
+
+  public Optional<Boolean> shouldRespondInThread() {
+    return asThread;
+  }
 }
