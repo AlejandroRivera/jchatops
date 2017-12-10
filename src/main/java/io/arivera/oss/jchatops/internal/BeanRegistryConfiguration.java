@@ -11,10 +11,13 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class BeanRegistryConfiguration {
 
+  /**
+   * Returns the implementation-specific version of {@link BeanDefinitionRegistry} which changes for tests vs production.
+   */
   @Bean
   @Autowired
   public BeanDefinitionRegistry getBeanDefinitionRegsitry(ApplicationContext applicationContext) {
-    if (applicationContext instanceof AnnotationConfigEmbeddedWebApplicationContext){
+    if (applicationContext instanceof AnnotationConfigEmbeddedWebApplicationContext) {
       return (BeanDefinitionRegistry) ((AnnotationConfigEmbeddedWebApplicationContext) applicationContext).getBeanFactory();
     } else {
       return (DefaultListableBeanFactory) applicationContext.getAutowireCapableBeanFactory();

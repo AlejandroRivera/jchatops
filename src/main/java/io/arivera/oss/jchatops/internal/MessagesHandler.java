@@ -121,7 +121,7 @@ public class MessagesHandler implements RTMMessageHandler {
     Iterator<MessageFilter> iterator = filters.iterator();
     MessageFilter firstFilter = iterator.next();
     MessageFilter lastFilter = firstFilter;
-    while(iterator.hasNext()) {
+    while (iterator.hasNext()) {
       MessageFilter nextFilter = iterator.next();
       lastFilter.setNextFilter(nextFilter);
       lastFilter = nextFilter;

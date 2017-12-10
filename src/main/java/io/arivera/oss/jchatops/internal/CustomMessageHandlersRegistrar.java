@@ -55,13 +55,12 @@ public class CustomMessageHandlersRegistrar {
             .map(source -> (MethodMetadata) source)
             .filter(source -> source.getReturnTypeName() != null)
             .filter(source -> {
-                  try {
-                    return Response.class.isAssignableFrom(Class.forName(source.getReturnTypeName()));
-                  } catch (ClassNotFoundException e) {
-                    return false;
-                  }
-                }
-            )
+              try {
+                return Response.class.isAssignableFrom(Class.forName(source.getReturnTypeName()));
+              } catch (ClassNotFoundException e) {
+                return false;
+              }
+            })
             .map(source -> source.getAnnotationAttributes(MessageHandler.class.getName()))
             .map(annotationAttributes -> {
               try {
@@ -71,15 +70,14 @@ public class CustomMessageHandlersRegistrar {
               }
             })
             .ifPresent(messageHandler -> {
-                  LOGGER.debug("Detected MessageHandler in bean named '{}': {}", beanName, messageHandler);
+              LOGGER.debug("Detected MessageHandler in bean named '{}': {}", beanName, messageHandler);
 
-                  allUserMessageHandlers.putIfAbsent(beanName, messageHandler);
-                  if (!messageHandler.requiresConversation()) {
-                    standaloneUserMessageHandlers.putIfAbsent(beanName, messageHandler);
-                  }
-                }
-            )
-        );
+              allUserMessageHandlers.putIfAbsent(beanName, messageHandler);
+              if (!messageHandler.requiresConversation()) {
+                standaloneUserMessageHandlers.putIfAbsent(beanName, messageHandler);
+              }
+            })
+      );
   }
 
 
