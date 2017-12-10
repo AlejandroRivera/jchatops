@@ -37,17 +37,11 @@ public class Response {
   }
 
   public Response message(List<String> messages) {
-    return this.message(
-        messages.stream()
-    );
+    return this.message(messages.stream());
   }
 
   public Response message(Stream<String> messages) {
-    return this.messages(messages.map(msg ->
-        SlackMessage.builder()
-            .setText(msg)
-            .build()
-    ));
+    return this.messages(messages.map(msg -> SlackMessage.builder().setText(msg).build()));
   }
 
   public Response messages(Message... message) {

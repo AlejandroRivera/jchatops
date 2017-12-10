@@ -71,10 +71,10 @@ public class UncaughtExceptionFilter extends MessageFilter {
         .build();
   }
 
-  private String getStackTrace(Throwable e) {
+  private String getStackTrace(Throwable throwable) {
     StringWriter sw = new StringWriter();
     PrintWriter pw = new PrintWriter(sw);
-    e.printStackTrace(pw);
+    throwable.printStackTrace(pw);
     return sw.toString();
   }
 

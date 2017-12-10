@@ -28,7 +28,7 @@ public class SlackBotState {
   }
 
   /**
-   * @return Slack bot user information
+   * @return Slack bot user information.
    */
   @Bean
   @Scope("singleton")

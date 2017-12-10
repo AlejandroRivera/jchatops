@@ -78,9 +78,9 @@ public @interface MessageHandler {
     }
 
     public BaseMessageHandler(String[] name, String[] patterns, MessageType[] messageTypes, boolean requiresConversation) {
-      this.name = name;
-      this.patterns = patterns;
-      this.messageTypes = messageTypes;
+      this.name = name.clone();
+      this.patterns = patterns.clone();
+      this.messageTypes = messageTypes.clone();
       this.requiresConversation = requiresConversation;
     }
 
@@ -91,17 +91,17 @@ public @interface MessageHandler {
 
     @Override
     public String[] name() {
-      return name;
+      return name.clone();
     }
 
     @Override
     public String[] patterns() {
-      return patterns;
+      return patterns.clone();
     }
 
     @Override
     public MessageType[] messageTypes() {
-      return messageTypes;
+      return messageTypes.clone();
     }
 
     @Override

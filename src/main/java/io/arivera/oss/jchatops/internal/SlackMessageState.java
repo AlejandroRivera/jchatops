@@ -58,7 +58,7 @@ public class SlackMessageState {
 
   /**
    * @return Matcher instance that contains an already evaluated expression for the received message.
-   * This is useful when trying to extract information from a pattern, particularly using named patterns.
+   *     This is useful when trying to extract information from a pattern, particularly using named patterns.
    *
    * @see MessageHandler#patterns()
    * @see Matcher#group(String)
@@ -83,8 +83,7 @@ public class SlackMessageState {
   }
 
   /**
-   * @return Channel where the message was received or {@code null} if message wasn't received in a Channel
-   * (for example, if received as a Direct message)
+   * @return Channel where the message was received or {@code null} if message wasn't received in a Channel.
    *
    * @see #instantMessage()
    * @see #groupChat()
@@ -97,8 +96,7 @@ public class SlackMessageState {
   }
 
   /**
-   * @return Instant Message details where the message was received or {@code null} if message was received elsewhere
-   * (for example, in a Channel)
+   * Instant Message details where the message was received or {@code null} if message was received elsewhere.
    *
    * @see #channel()
    * @see #groupChat()
@@ -111,8 +109,7 @@ public class SlackMessageState {
   }
 
   /**
-   * @return Group chat information where the message was received, or {@code null} if the message was received elsewhere
-   * (for example, in a Channel or as a Direct Message)
+   * Group chat information where the message was received, or {@code null} if the message was received elsewhere.
    *
    * @see #instantMessage()
    * @see #channel()
