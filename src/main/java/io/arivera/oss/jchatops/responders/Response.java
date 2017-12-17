@@ -22,7 +22,7 @@ public class Response {
 
   private final BeanDefinitionRegistry beanDefinitionRegistry;
 
-  private Stream<ChatPostMessageRequest> messages;
+  private Stream<ChatPostMessageRequest> messages = Stream.empty();
   private boolean resetConversation;
   private List<String> conversationBeansToFollowUpWith = new ArrayList<>(0);
   private Optional<Boolean> asThread = Optional.empty();
