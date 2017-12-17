@@ -70,7 +70,9 @@ public class MessageRouter extends MessageFilter {
           .findFirst();
 
       if (matchingMatcher.isPresent()) {
-        LOGGER.debug("Pattern '{}' matched in bean '{}'", matchingMatcher.get().pattern().pattern(), beanName);
+        LOGGER.info("Pattern '{}' matched in bean '{}' with message: {}",
+            matchingMatcher.get().pattern().pattern(), beanName, message.getText());
+
         SlackMessageState.currentMatchedPattern.set(matchingMatcher.get());
 
         Response bean = applicationContext.getBean(beanName, Response.class);

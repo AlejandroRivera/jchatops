@@ -54,6 +54,7 @@ public class WebApiResponder extends AbstractResponder {
     responseContext.getSlackResponseMessages()
         .forEach(msg -> {
           try {
+            LOGGER.info("Responding: {}", msg.getText());
             LOGGER.debug("Posting message: {}", toJsonString(msg));
             ChatPostMessageResponse response = slack.methods().chatPostMessage(msg);
             LOGGER.debug("Response: {}", toJsonString(response));

@@ -46,7 +46,7 @@ public class UnrecognizedCommandFilter extends MessageFilter {
     if (maybeResponse.isPresent() || messageType == MessageType.PUBLIC) {
       return maybeResponse;
     } else {
-      LOGGER.info("Received message did not match any message handlers.");
+      LOGGER.info("Received message did not match any message handlers: {}", message.getText());
       String msg = UNRECOGNIZED_COMMAND_MESSAGE;
       if (conversationContext.isPresent()) {
         msg += CONVERSATION_INSTRUCTIONS;

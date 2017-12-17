@@ -108,7 +108,7 @@ public class MessagesHandler implements RTMMessageHandler {
     }
 
     MessageType currentMessageType = extractMessageType(message);
-    LOGGER.info("'{}' message received: {}", currentMessageType, message);
+    LOGGER.debug("'{}' message received: {}", currentMessageType, message);
 
     SlackMessageState.currentSender.set(users.get(message.getUser()));
     SlackMessageState.currentMessage.set(message);

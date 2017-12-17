@@ -76,7 +76,7 @@ public class MessageAuthorizerFilter extends MessageFilter {
       user = new UsernamePasswordAuthenticationToken(sender, "N/A", grantedAuthorities);
     }
 
-    LOGGER.info("User auth: {}", user);
+    LOGGER.debug("User auth: {}", user);
     SecurityContextHolder.getContext().setAuthentication(user);
     return sender;
   }
