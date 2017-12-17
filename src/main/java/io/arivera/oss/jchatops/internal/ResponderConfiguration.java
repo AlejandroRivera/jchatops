@@ -33,7 +33,7 @@ public class ResponderConfiguration {
    */
   @Bean
   @Primary
-  public Responder getResponder(){
+  public Responder getResponder() {
     return apiResponder;
   }
 

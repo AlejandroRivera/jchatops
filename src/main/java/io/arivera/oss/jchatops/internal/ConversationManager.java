@@ -17,8 +17,10 @@ public class ConversationManager {
 
   private Map<ConversationKey, ConversationContext> conversations = new ConcurrentHashMap<>();
 
+  /**
+   * Returns the {@link ConversationContext} for the message received using user/channel/thread information.
+   */
   public Optional<ConversationContext> getConversation(Message message) {
-
     String user = message.getUser();
     String channel = message.getChannel();
     Optional<String> parentThreadId = Optional.ofNullable(message.getThreadTs());
@@ -35,6 +37,9 @@ public class ConversationManager {
     return Optional.ofNullable(conversationContext);
   }
 
+  /**
+   * Saves information about the current conversation into the ConversationContext.
+   */
   public void saveConversation(Message incomingMessage, Response response, ConversationContext context) {
     String parentThreadId = null;
     Boolean forceThread = response.shouldRespondInThread().orElse(false);

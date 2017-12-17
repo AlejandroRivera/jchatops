@@ -22,7 +22,7 @@ public class SlackApiMock extends SlackApi {
 
   @Bean
   @Override
-  public RTMClient SlackRealTimeMessaging(RTMStartResponse rtmStartResponse) {
+  public RTMClient slackRealTimeMessaging(RTMStartResponse rtmStartResponse) {
     try {
       this.rtm = Mockito.spy(new RTMClient("http://fake.slack.com") {
         @Override

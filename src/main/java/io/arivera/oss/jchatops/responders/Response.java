@@ -68,6 +68,9 @@ public class Response {
     return messages;
   }
 
+  /**
+   * Applies a transforming function to outgoing messages.
+   */
   public Response wrapSlackMessages(Function<Stream<Message>, Stream<Message>> transformer) {
     Stream<Message> originalResponseMessages = getSlackResponseMessages();
     Stream<Message> transformedMessages = transformer.apply(originalResponseMessages);
@@ -106,7 +109,7 @@ public class Response {
   }
 
   /**
-   * @see #inThread(boolean)
+   * Alias for {@link #inThread(boolean)} with {@code true} value.
    */
   public Response inThread() {
     return inThread(true);
@@ -131,7 +134,7 @@ public class Response {
   }
 
   /**
-   * @see #alsoPostToMainConversation(boolean)
+   * Alias for {@link #alsoPostToMainConversation(boolean)} with {@code true} value.
    */
   public Response alsoPostToMainConversation() {
     return alsoPostToMainConversation(true);

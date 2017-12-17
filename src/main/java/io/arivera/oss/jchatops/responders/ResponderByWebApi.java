@@ -59,29 +59,28 @@ public class ResponderByWebApi extends AbstractResponder {
 
     responseContext.getSlackResponseMessages()
         .forEach(msg -> {
-              ChatPostMessageRequest msgToPost = ChatPostMessageRequest.builder()
-                  .token(slackToken)
-                  .asUser(true)
-                  .attachments(msg.getAttachments())
-                  .channel(msg.getChannel())
-                  .threadTs(msg.getThreadTs())
-                  .text(msg.getText())
-                  .replyBroadcast(msg instanceof SlackMessage && ((SlackMessage) msg).isReplyBroadcast())
-                  .build();
-              try {
-                LOGGER.debug("Posting message: {}", gson.toJson(msgToPost));
-                ChatPostMessageResponse response = slack.methods().chatPostMessage(msgToPost);
-                LOGGER.debug("Response: {}", gson.toJson(msgToPost));
-                if (response.getWarning() != null) {
-                  LOGGER.warn("Message posting response contained warning: {}", response.getWarning());
-                }
-                if (response.getError() != null) {
-                  LOGGER.error("Message posting response contained warning: {}", response.getWarning());
-                }
-              } catch (IOException | SlackApiException e) {
-                LOGGER.error("Exception submitting msg: {}", gson.toJson(msgToPost), e);
-              }
+          ChatPostMessageRequest msgToPost = ChatPostMessageRequest.builder()
+              .token(slackToken)
+              .asUser(true)
+              .attachments(msg.getAttachments())
+              .channel(msg.getChannel())
+              .threadTs(msg.getThreadTs())
+              .text(msg.getText())
+              .replyBroadcast(msg instanceof SlackMessage && ((SlackMessage) msg).isReplyBroadcast())
+              .build();
+          try {
+            LOGGER.debug("Posting message: {}", gson.toJson(msgToPost));
+            ChatPostMessageResponse response = slack.methods().chatPostMessage(msgToPost);
+            LOGGER.debug("Response: {}", gson.toJson(msgToPost));
+            if (response.getWarning() != null) {
+              LOGGER.warn("Message posting response contained warning: {}", response.getWarning());
             }
-        );
+            if (response.getError() != null) {
+              LOGGER.error("Message posting response contained warning: {}", response.getWarning());
+            }
+          } catch (IOException | SlackApiException e) {
+            LOGGER.error("Exception submitting msg: {}", gson.toJson(msgToPost), e);
+          }
+        });
   }
 }

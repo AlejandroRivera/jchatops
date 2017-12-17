@@ -2,23 +2,22 @@ package io.arivera.oss.jchatops.internal;
 
 import com.github.seratch.jslack.Slack;
 import com.github.seratch.jslack.api.methods.MethodsClient;
-import com.github.seratch.jslack.api.methods.SlackApiException;
 import com.github.seratch.jslack.api.methods.request.rtm.RTMStartRequest;
 import com.github.seratch.jslack.api.methods.response.rtm.RTMStartResponse;
 import com.github.seratch.jslack.api.rtm.RTMClient;
 import com.github.seratch.jslack.common.http.SlackHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import javax.annotation.PreDestroy;
-import javax.websocket.DeploymentException;
 
 @Configuration
 public class SlackApi {
@@ -29,7 +28,7 @@ public class SlackApi {
 
   @Bean("slackToken")
   @Scope("singleton")
-  public String getSlackToken(@Value("${slack.token}") String slackToken){
+  public String getSlackToken(@Value("${slack.token}") String slackToken) {
     return slackToken;
   }
 
@@ -46,20 +45,21 @@ public class SlackApi {
     return Slack.getInstance(httpClient);
   }
 
+  /**
+   * Returns an already connected {@link RTMClient}.
+   */
   @Autowired
   @Bean
   @Scope("singleton")
-  public RTMClient SlackRealTimeMessaging(RTMStartResponse rtmStartResponse) {
+  public RTMClient slackRealTimeMessaging(RTMStartResponse rtmStartResponse) {
     String wssUrl = rtmStartResponse.getUrl();
     try {
       rtm = new RTMClient(wssUrl);
       rtm.connect();
       LOGGER.info("Slack RTM connection established");
       return rtm;
-    } catch (URISyntaxException e) {
-      throw new IllegalStateException("URL received from RTM Start response is invalid: " + wssUrl, e);
-    } catch (IOException | DeploymentException e) {
-      throw new IllegalStateException("Could not connec to RTM with URL: " + wssUrl , e);
+    } catch (Throwable e) {
+      throw new BeanCreationException("Could not create or connect RTMClient with WSS Url: " + wssUrl, e);
     }
   }
 
@@ -68,7 +68,7 @@ public class SlackApi {
    */
   @Bean
   @Scope("singleton")
-  public RTMStartResponse getRtmState(@Value("${slack.token}") String slackToken, Slack slack) {
+  public RTMStartResponse getRtmState(@Qualifier("slackToken") String slackToken, Slack slack) {
     try {
       MethodsClient methods = slack.methods();
       return methods.rtmStart(
@@ -77,8 +77,8 @@ public class SlackApi {
               .noUnreads(true)    // improves performance by avoiding to retrieve unread counts
               .mpimAware(false)   // multiparty IMs, when false, they'll be shown as groups.
               .build());
-    } catch (IOException | SlackApiException e) {
-      throw new IllegalStateException("Couldn't fetch RTM API WebSocket endpoint. Ensure the 'slack.token' value is correct.", e);
+    } catch (Throwable e) {
+      throw new BeanCreationException("Could not fetch RTM API WebSocket endpoint. Possibly 'slack.token' is incorrect.", e);
     }
   }
 
