@@ -15,22 +15,24 @@ public class HelpCommand {
 
   @MessageHandler(patterns = "help")
   public Response help(Message message, Response response) {
-      try {
-        Thread.sleep(5000);
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
       return response.message("```\n"
                    + "* Say: 'hello'\n"
-                   + "* Say: 'help\n"
-                   + "* Say: 'knock knock\n"
+                   + "* Say: 'help'\n"
+                   + "* Say: 'knock knock'\n"
                    + "```");
   }
 
   @MessageHandler(patterns = "help hello")
   public Response helpHello(Message message, Response response) {
     return response
-        .message("> Hello\n"
+        .message("> hello\n"
                  + "Starts a conversation about your name age.");
+  }
+
+  @MessageHandler(patterns = "help knock knock")
+  public Response helpKnockKnock(Message message, Response response) {
+    return response
+        .message("> knock knock\n"
+                 + "Starts a knock-knock joke dialog.");
   }
 }
