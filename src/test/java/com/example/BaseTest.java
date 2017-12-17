@@ -18,7 +18,7 @@ import io.arivera.oss.jchatops.internal.SlackApiMock;
 import io.arivera.oss.jchatops.internal.SlackBotState;
 import io.arivera.oss.jchatops.internal.SlackMessageState;
 import io.arivera.oss.jchatops.responders.CancelConversationHandlers;
-import io.arivera.oss.jchatops.responders.Responder;
+import io.arivera.oss.jchatops.responders.ResponderByRtm;
 import io.arivera.oss.jchatops.responders.Response;
 
 import org.junit.runner.RunWith;
@@ -35,7 +35,7 @@ import org.springframework.test.context.junit4.SpringRunner;
         Response.class,
         MessageRouter.class,
         CancelConversationHandlers.class,
-        Responder.class,
+        ResponderByRtm.class,
         UncaughtExceptionFilter.class,
         BotTaggedMessageRemoverFilter.class,
         UnrecognizedCommandFilter.class,
