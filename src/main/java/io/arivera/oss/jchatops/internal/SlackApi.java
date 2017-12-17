@@ -6,6 +6,8 @@ import com.github.seratch.jslack.api.methods.request.rtm.RTMStartRequest;
 import com.github.seratch.jslack.api.methods.response.rtm.RTMStartResponse;
 import com.github.seratch.jslack.api.rtm.RTMClient;
 import com.github.seratch.jslack.common.http.SlackHttpClient;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanCreationException;
@@ -32,10 +34,26 @@ public class SlackApi {
     return slackToken;
   }
 
+  /**
+   * OkHttpClient that includes the Slack Token an Authorization HTTP header.
+   */
+  @Bean
+  public OkHttpClient getOkHttpClient(@Qualifier("slackToken") String slackToken) {
+    return new OkHttpClient.Builder()
+            .addInterceptor(chain -> {
+              Request request = chain.request();
+              Request requestWithTokenInHeader = request.newBuilder()
+                  .addHeader("Authorization", "Bearer " + slackToken)
+                  .build();
+              return chain.proceed(requestWithTokenInHeader);
+            })
+            .build();
+  }
+
   @Bean
   @Scope("singleton")
-  public SlackHttpClient getSlackHttpClient() {
-    return new SlackHttpClient();
+  public SlackHttpClient getSlackHttpClient(OkHttpClient okHttpClient) {
+    return new SlackHttpClient(okHttpClient);
   }
 
   @Autowired

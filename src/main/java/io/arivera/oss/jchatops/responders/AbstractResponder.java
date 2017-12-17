@@ -5,6 +5,7 @@ import io.arivera.oss.jchatops.internal.ConversationManager;
 import io.arivera.oss.jchatops.internal.SlackMessageState;
 
 import com.github.seratch.jslack.api.model.Message;
+import com.google.gson.Gson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,10 +21,12 @@ public abstract class AbstractResponder implements Responder {
 
   protected final SlackMessageState slackMessageState;
   protected final ConversationManager conversationManager;
+  protected final Gson gson;
 
-  public AbstractResponder(SlackMessageState slackMessageState, ConversationManager conversationManager) {
+  public AbstractResponder(SlackMessageState slackMessageState, ConversationManager conversationManager, Gson gson) {
     this.slackMessageState = slackMessageState;
     this.conversationManager = conversationManager;
+    this.gson = gson;
   }
 
   protected Message getOriginalMessage() {
@@ -59,4 +62,7 @@ public abstract class AbstractResponder implements Responder {
     LOGGER.debug("Next responses received the same user+channel[+thread] will be processed by: {}", beansToFollowUpWith);
   }
 
+  protected String toJsonString(Object obj) {
+    return gson.toJson(obj);
+  }
 }

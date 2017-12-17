@@ -61,6 +61,7 @@ public class SlackMessage extends Message {
     private boolean wibblr;
     private List<String> pinnedTo;
     private List<Reaction> reactions;
+    private boolean replyBroadcast;
 
     public Builder setType(String type) {
       this.type = type;
@@ -89,6 +90,11 @@ public class SlackMessage extends Message {
 
     public Builder setTs(String ts) {
       this.ts = ts;
+      return this;
+    }
+
+    public Builder setReplyBroadcast(boolean replyBroadcast) {
+      this.replyBroadcast = replyBroadcast;
       return this;
     }
 
@@ -130,6 +136,7 @@ public class SlackMessage extends Message {
       message.setWibblr(wibblr);
       message.setPinnedTo(pinnedTo);
       message.setReactions(reactions);
+      message.setReplyBroadcast(replyBroadcast);
       return message;
     }
   }

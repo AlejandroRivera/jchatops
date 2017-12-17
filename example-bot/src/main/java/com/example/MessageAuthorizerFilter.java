@@ -1,10 +1,10 @@
 package com.example;
 
 import io.arivera.oss.jchatops.MessageFilter;
-import io.arivera.oss.jchatops.SlackMessage;
 import io.arivera.oss.jchatops.annotations.MessageGraph;
 import io.arivera.oss.jchatops.responders.Response;
 
+import com.github.seratch.jslack.api.methods.request.chat.ChatPostMessageRequest;
 import com.github.seratch.jslack.api.model.Message;
 import com.github.seratch.jslack.api.model.User;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -84,13 +84,13 @@ public class MessageAuthorizerFilter extends MessageFilter {
   private Optional<Response> handleAccessDenied(User userInContext, Message message) {
     return Optional.of(
         response.messages(
-            SlackMessage.builder()
-                .setText("Nuh huh! You can't do that!")
+            ChatPostMessageRequest.builder()
+                .text("Nuh huh! You can't do that!")
                 .build(),
-            SlackMessage.builder()
-                .setText(String.format("Not to be a tattletale but '%s' just messaged me saying: '%s'",
+            ChatPostMessageRequest.builder()
+                .text(String.format("Not to be a tattletale but '%s' just messaged me saying: '%s'",
                     userInContext.getName(), message.getText()))
-                .setChannel(adminChannel)
+                .channel(adminChannel)
                 .build()));
   }
 

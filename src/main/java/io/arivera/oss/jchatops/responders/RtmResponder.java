@@ -1,8 +1,10 @@
 package io.arivera.oss.jchatops.responders;
 
+import io.arivera.oss.jchatops.SlackMessage;
 import io.arivera.oss.jchatops.internal.ConversationManager;
 import io.arivera.oss.jchatops.internal.SlackMessageState;
 
+import com.github.seratch.jslack.api.methods.request.chat.ChatPostMessageRequest;
 import com.github.seratch.jslack.api.model.Message;
 import com.github.seratch.jslack.api.rtm.RTMClient;
 import com.google.gson.Gson;
@@ -21,15 +23,13 @@ public class RtmResponder extends AbstractResponder {
   private static final Logger LOGGER = LoggerFactory.getLogger(RtmResponder.class);
 
   private final RTMClient rtmClient;
-  private final Gson gson;
 
   @Autowired
   public RtmResponder(RTMClient rtmClient, Gson gson,
                       SlackMessageState slackMessageState,
                       ConversationManager conversationManager) {
-    super(slackMessageState, conversationManager);
+    super(slackMessageState, conversationManager, gson);
     this.rtmClient = rtmClient;
-    this.gson = gson;
   }
 
   /**
@@ -48,11 +48,22 @@ public class RtmResponder extends AbstractResponder {
     }
 
     responseContext.getSlackResponseMessages()
-        .forEach(msg -> {
-          String json = gson.toJson(msg);
+        .map(this::toRtmMessage)
+        .map(this::toJsonString)
+        .forEach(json -> {
           LOGGER.debug("Message to be submitted via RTM: {}", json);
           rtmClient.sendMessage(json);
         });
+  }
+
+  private SlackMessage toRtmMessage(ChatPostMessageRequest chatPostMessageRequest) {
+    return SlackMessage.builder()
+        .setText(chatPostMessageRequest.getText())
+        .setChannel(chatPostMessageRequest.getChannel())
+        .setAttachments(chatPostMessageRequest.getAttachments())    // in case RTM ever support attachments
+        .setThreadTs(chatPostMessageRequest.getThreadTs())
+        .setReplyBroadcast(chatPostMessageRequest.isReplyBroadcast())
+        .build();
   }
 
 }

@@ -1,7 +1,6 @@
 package io.arivera.oss.jchatops.filters;
 
 import io.arivera.oss.jchatops.MessageFilter;
-import io.arivera.oss.jchatops.SlackMessage;
 import io.arivera.oss.jchatops.responders.Response;
 
 import com.github.seratch.jslack.api.model.Message;
@@ -47,9 +46,9 @@ public class ThreadedResponseFilter extends MessageFilter {
                     LOGGER.debug("Response message(s) will be delivered in the same conversation thread.");
                     msg.setThreadTs(parentThread);
 
-                    if (response.shouldBroadcastInChannel() && msg instanceof SlackMessage) {
+                    if (response.shouldBroadcastInChannel() && !msg.isReplyBroadcast()) {
                       LOGGER.debug("Response message(s) will also be delivered in the main (non-threaded) conversation.");
-                      ((SlackMessage) msg).setReplyBroadcast(true);
+                      msg.setReplyBroadcast(true);
                     }
                   }
                   return msg;

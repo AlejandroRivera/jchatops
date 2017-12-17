@@ -63,7 +63,7 @@ public class UncaughtExceptionsTest extends BaseTest {
     Message message = gson.fromJson(messageCaptor.getValue(), Message.class);
     assertThat(message, notNullValue());
     assertThat(message.getText().toLowerCase(), containsString("uncaught exception"));
-    assertThat(message.getText(), containsString(TestCommand.BEAN_EXCEPTION_MSG));
+    assertThat(message.getAttachments().get(0).getText(), containsString(TestCommand.BEAN_EXCEPTION_MSG));
   }
 
   @Test

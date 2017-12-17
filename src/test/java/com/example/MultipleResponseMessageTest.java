@@ -6,10 +6,10 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import io.arivera.oss.jchatops.MessageType;
-import io.arivera.oss.jchatops.SlackMessage;
 import io.arivera.oss.jchatops.annotations.MessageHandler;
 import io.arivera.oss.jchatops.responders.Response;
 
+import com.github.seratch.jslack.api.methods.request.chat.ChatPostMessageRequest;
 import com.github.seratch.jslack.api.methods.response.rtm.RTMStartResponse;
 import com.github.seratch.jslack.api.model.Message;
 import com.github.seratch.jslack.api.rtm.RTMClient;
@@ -112,12 +112,12 @@ public class MultipleResponseMessageTest extends BaseTest {
     public Response foo(Message message, Response response) {
       return response
           .messages(
-              SlackMessage.builder()
-                  .setText("msg1")
+              ChatPostMessageRequest.builder()
+                  .text("msg1")
                   .build(),
-              SlackMessage.builder()
-                  .setText("msg2")
-                  .setChannel("channel2")
+              ChatPostMessageRequest.builder()
+                  .text("msg2")
+                  .channel("channel2")
                   .build());
     }
 

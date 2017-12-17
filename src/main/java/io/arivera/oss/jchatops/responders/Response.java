@@ -1,8 +1,6 @@
 package io.arivera.oss.jchatops.responders;
 
-import io.arivera.oss.jchatops.SlackMessage;
-
-import com.github.seratch.jslack.api.model.Message;
+import com.github.seratch.jslack.api.methods.request.chat.ChatPostMessageRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
@@ -24,7 +22,7 @@ public class Response {
 
   private final BeanDefinitionRegistry beanDefinitionRegistry;
 
-  private Stream<Message> messages;
+  private Stream<ChatPostMessageRequest> messages;
   private boolean resetConversation;
   private List<String> conversationBeansToFollowUpWith = new ArrayList<>(0);
   private Optional<Boolean> asThread = Optional.empty();
@@ -44,14 +42,19 @@ public class Response {
   }
 
   public Response message(Stream<String> messages) {
-    return this.messages(messages.map(msg -> SlackMessage.builder().setText(msg).build()));
+    return this.messages(
+        messages.map(msg ->
+            ChatPostMessageRequest.builder()
+                .asUser(true)
+                .text(msg)
+                .build()));
   }
 
-  public Response messages(Message... message) {
+  public Response messages(ChatPostMessageRequest... message) {
     return this.messages(Arrays.stream(message));
   }
 
-  public Response messages(Stream<Message> message) {
+  public Response messages(Stream<ChatPostMessageRequest> message) {
     this.messages = message;
     return this;
   }
@@ -64,16 +67,16 @@ public class Response {
     return this;
   }
 
-  public Stream<Message> getSlackResponseMessages() {
+  public Stream<ChatPostMessageRequest> getSlackResponseMessages() {
     return messages;
   }
 
   /**
    * Applies a transforming function to outgoing messages.
    */
-  public Response wrapSlackMessages(Function<Stream<Message>, Stream<Message>> transformer) {
-    Stream<Message> originalResponseMessages = getSlackResponseMessages();
-    Stream<Message> transformedMessages = transformer.apply(originalResponseMessages);
+  public Response wrapSlackMessages(Function<Stream<ChatPostMessageRequest>, Stream<ChatPostMessageRequest>> transformer) {
+    Stream<ChatPostMessageRequest> originalResponseMessages = getSlackResponseMessages();
+    Stream<ChatPostMessageRequest> transformedMessages = transformer.apply(originalResponseMessages);
     this.messages(transformedMessages);
     return this;
   }

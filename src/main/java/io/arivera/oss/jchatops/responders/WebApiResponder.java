@@ -1,12 +1,10 @@
 package io.arivera.oss.jchatops.responders;
 
-import io.arivera.oss.jchatops.SlackMessage;
 import io.arivera.oss.jchatops.internal.ConversationManager;
 import io.arivera.oss.jchatops.internal.SlackMessageState;
 
 import com.github.seratch.jslack.Slack;
 import com.github.seratch.jslack.api.methods.SlackApiException;
-import com.github.seratch.jslack.api.methods.request.chat.ChatPostMessageRequest;
 import com.github.seratch.jslack.api.methods.response.chat.ChatPostMessageResponse;
 import com.github.seratch.jslack.api.model.Message;
 import com.github.seratch.jslack.api.rtm.RTMClient;
@@ -28,18 +26,14 @@ public class WebApiResponder extends AbstractResponder {
   private static final Logger LOGGER = LoggerFactory.getLogger(WebApiResponder.class);
 
   private final Slack slack;
-  private final String slackToken;
-  private final Gson gson;
 
   @Autowired
-  public WebApiResponder(Slack slack, @Qualifier("slackToken") String slackToken,
+  public WebApiResponder(Slack slack,
                          Gson gson,
                          SlackMessageState slackMessageState,
                          ConversationManager conversationManager) {
-    super(slackMessageState, conversationManager);
+    super(slackMessageState, conversationManager, gson);
     this.slack = slack;
-    this.slackToken = slackToken;
-    this.gson = gson;
   }
 
   /**
@@ -59,19 +53,10 @@ public class WebApiResponder extends AbstractResponder {
 
     responseContext.getSlackResponseMessages()
         .forEach(msg -> {
-          ChatPostMessageRequest msgToPost = ChatPostMessageRequest.builder()
-              .token(slackToken)
-              .asUser(true)
-              .attachments(msg.getAttachments())
-              .channel(msg.getChannel())
-              .threadTs(msg.getThreadTs())
-              .text(msg.getText())
-              .replyBroadcast(msg instanceof SlackMessage && ((SlackMessage) msg).isReplyBroadcast())
-              .build();
           try {
-            LOGGER.debug("Posting message: {}", gson.toJson(msgToPost));
-            ChatPostMessageResponse response = slack.methods().chatPostMessage(msgToPost);
-            LOGGER.debug("Response: {}", gson.toJson(msgToPost));
+            LOGGER.debug("Posting message: {}", toJsonString(msg));
+            ChatPostMessageResponse response = slack.methods().chatPostMessage(msg);
+            LOGGER.debug("Response: {}", toJsonString(response));
             if (response.getWarning() != null) {
               LOGGER.warn("Message posting response contained warning: {}", response.getWarning());
             }
@@ -79,7 +64,7 @@ public class WebApiResponder extends AbstractResponder {
               LOGGER.error("Message posting response contained warning: {}", response.getWarning());
             }
           } catch (IOException | SlackApiException e) {
-            LOGGER.error("Exception submitting msg: {}", gson.toJson(msgToPost), e);
+            LOGGER.error("Exception submitting msg: {}", toJsonString(msg), e);
           }
         });
   }
