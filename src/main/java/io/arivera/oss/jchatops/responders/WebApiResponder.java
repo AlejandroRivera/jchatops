@@ -23,19 +23,19 @@ import java.io.IOException;
 @Component
 @Qualifier("web-api")
 @Scope("singleton")
-public class ResponderByWebApi extends AbstractResponder {
+public class WebApiResponder extends AbstractResponder {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(ResponderByWebApi.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(WebApiResponder.class);
 
   private final Slack slack;
   private final String slackToken;
   private final Gson gson;
 
   @Autowired
-  public ResponderByWebApi(Slack slack, @Qualifier("slackToken") String slackToken,
-                           Gson gson,
-                           SlackMessageState slackMessageState,
-                           ConversationManager conversationManager) {
+  public WebApiResponder(Slack slack, @Qualifier("slackToken") String slackToken,
+                         Gson gson,
+                         SlackMessageState slackMessageState,
+                         ConversationManager conversationManager) {
     super(slackMessageState, conversationManager);
     this.slack = slack;
     this.slackToken = slackToken;

@@ -16,17 +16,17 @@ import org.springframework.stereotype.Component;
 @Component
 @Qualifier("rtm")
 @Scope("singleton")
-public class ResponderByRtm extends AbstractResponder {
+public class RtmResponder extends AbstractResponder {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(ResponderByRtm.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(RtmResponder.class);
 
   private final RTMClient rtmClient;
   private final Gson gson;
 
   @Autowired
-  public ResponderByRtm(RTMClient rtmClient, Gson gson,
-                        SlackMessageState slackMessageState,
-                        ConversationManager conversationManager) {
+  public RtmResponder(RTMClient rtmClient, Gson gson,
+                      SlackMessageState slackMessageState,
+                      ConversationManager conversationManager) {
     super(slackMessageState, conversationManager);
     this.rtmClient = rtmClient;
     this.gson = gson;
