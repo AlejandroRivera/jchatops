@@ -15,6 +15,7 @@ import com.github.seratch.jslack.api.model.User;
 import com.github.seratch.jslack.api.rtm.RTMMessageHandler;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonSyntaxException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,7 +84,7 @@ public class MessagesHandler implements RTMMessageHandler {
 
     JsonObject jsonObject = gson.fromJson(jsonMessage, JsonObject.class);
     if (jsonObject.get("type") == null) {
-      LOGGER.debug("Message received without 'type': {}", jsonMessage);
+      LOGGER.debug("Message received without 'type'");
       return;
     } else if (jsonObject.get("subtype") != null) {
       // See "Message subtypes" in https://api.slack.com/events/message
@@ -91,12 +92,18 @@ public class MessagesHandler implements RTMMessageHandler {
       return;
     }
 
-    Message message = gson.fromJson(jsonObject, Message.class);
+    Message message;
+    try {
+      message = gson.fromJson(jsonObject, Message.class);
+    } catch (JsonSyntaxException e) {
+      LOGGER.warn("Could not parse JSON from message: {}", jsonMessage, e);
+      return;
+    }
     if (message.getType().equalsIgnoreCase("error")) {
       LOGGER.warn("Message receive is reporting an error: {}", jsonMessage);
       return;
     } else if (!message.getType().equalsIgnoreCase("message")) {
-      LOGGER.debug("Message received but it's not an actual 'message': {}", jsonMessage);
+      LOGGER.debug("Message received but it's not an actual 'message' but a '{}'", message.getType());
       return;
     }
 
