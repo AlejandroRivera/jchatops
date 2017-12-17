@@ -5,6 +5,7 @@ import com.github.seratch.jslack.api.model.Message;
 import com.github.seratch.jslack.api.model.Reaction;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * An extension of the JSlack {@link Message} class.
@@ -22,6 +23,26 @@ public class SlackMessage extends Message {
   public SlackMessage setReplyBroadcast(boolean replyBroadcast) {
     this.replyBroadcast = replyBroadcast;
     return this;
+  }
+
+  @Override
+  public boolean equals(Object other) {
+    if (this == other) {
+      return true;
+    }
+    if (!(other instanceof SlackMessage)) {
+      return false;
+    }
+    if (!super.equals(other)) {
+      return false;
+    }
+    SlackMessage that = (SlackMessage) other;
+    return replyBroadcast == that.replyBroadcast;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(super.hashCode(), replyBroadcast);
   }
 
   public static Builder builder() {
