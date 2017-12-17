@@ -85,9 +85,11 @@ public class MessageAuthorizerFilter extends MessageFilter {
     return Optional.of(
         response.messages(
             ChatPostMessageRequest.builder()
+                .asUser(true)
                 .text("Nuh huh! You can't do that!")
                 .build(),
             ChatPostMessageRequest.builder()
+                .asUser(true)
                 .text(String.format("Not to be a tattletale but '%s' just messaged me saying: '%s'",
                     userInContext.getName(), message.getText()))
                 .channel(adminChannel)
