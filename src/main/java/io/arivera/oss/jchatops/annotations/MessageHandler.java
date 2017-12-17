@@ -29,6 +29,7 @@ public @interface MessageHandler {
 
   String NAME_FIELD_NAME = "name";
   String PATTERNS_FIELD_NAME = "patterns";
+  String FLAGS_FIELD_NAME = "flags";
   String MESSAGE_TYPES_FIELD_NAME = "messageTypes";
   String REQUIRES_CONVERSATION_FIELD_NAME = "requiresConversation";
 
@@ -42,8 +43,17 @@ public @interface MessageHandler {
 
   /**
    * Regular Expression patterns.
+   *
+   * @see Pattern
    */
   String[] patterns() default {""};
+
+  /**
+   * Regular Expression pattern flags.
+   *
+   * @see Pattern
+   */
+  int flags() default Pattern.CASE_INSENSITIVE;
 
   /**
    * Defines the types of messages that this bean will submitResponse to.
@@ -60,12 +70,14 @@ public @interface MessageHandler {
 
     private final String[] name;
     private final String[] patterns;
+    private final int flags;
     private final MessageType[] messageTypes;
     private final boolean requiresConversation;
 
     public BaseMessageHandler(AnnotationAttributes annotationAttributes) {
       this.name = annotationAttributes.getStringArray(MessageHandler.NAME_FIELD_NAME);
       this.patterns = annotationAttributes.getStringArray(MessageHandler.PATTERNS_FIELD_NAME);
+      this.flags = annotationAttributes.getNumber(MessageHandler.FLAGS_FIELD_NAME);
       this.messageTypes = (MessageType[]) annotationAttributes.get(MessageHandler.MESSAGE_TYPES_FIELD_NAME);
       this.requiresConversation = annotationAttributes.getBoolean(MessageHandler.REQUIRES_CONVERSATION_FIELD_NAME);
     }
@@ -73,13 +85,16 @@ public @interface MessageHandler {
     public BaseMessageHandler(Map<String,Object> annotationAttributes) {
       this.name = (String[]) annotationAttributes.get(MessageHandler.NAME_FIELD_NAME);
       this.patterns = (String[]) annotationAttributes.get(MessageHandler.PATTERNS_FIELD_NAME);
+      this.flags = (int) annotationAttributes.get(MessageHandler.FLAGS_FIELD_NAME);
       this.messageTypes = (MessageType[]) annotationAttributes.get(MessageHandler.MESSAGE_TYPES_FIELD_NAME);
       this.requiresConversation = (boolean) annotationAttributes.get(MessageHandler.REQUIRES_CONVERSATION_FIELD_NAME);
     }
 
-    public BaseMessageHandler(String[] name, String[] patterns, MessageType[] messageTypes, boolean requiresConversation) {
+    public BaseMessageHandler(String[] name, String[] patterns, int flags,
+                              MessageType[] messageTypes, boolean requiresConversation) {
       this.name = name.clone();
       this.patterns = patterns.clone();
+      this.flags = flags;
       this.messageTypes = messageTypes.clone();
       this.requiresConversation = requiresConversation;
     }
@@ -100,6 +115,11 @@ public @interface MessageHandler {
     }
 
     @Override
+    public int flags() {
+      return flags;
+    }
+
+    @Override
     public MessageType[] messageTypes() {
       return messageTypes.clone();
     }
@@ -113,6 +133,7 @@ public @interface MessageHandler {
     public String toString() {
       final StringBuilder sb = new StringBuilder("BaseMessageHandler{");
       sb.append("patterns=").append(Arrays.toString(patterns));
+      sb.append(", flags=").append(flags);
       sb.append(", messageTypes=").append(Arrays.toString(messageTypes));
       sb.append(", requiresConversation=").append(requiresConversation);
       sb.append('}');
@@ -125,9 +146,10 @@ public @interface MessageHandler {
     private final List<Pattern> compiledPatterns;
 
     public FriendlyMessageHandler(MessageHandler annotation) throws PatternSyntaxException {
-      super(annotation.name(), annotation.patterns(), annotation.messageTypes(), annotation.requiresConversation());
+      super(annotation.name(), annotation.patterns(), annotation.flags(),
+            annotation.messageTypes(), annotation.requiresConversation());
       this.compiledPatterns = Arrays.stream(patterns())
-          .map(pattern -> Pattern.compile(pattern, Pattern.CASE_INSENSITIVE))
+          .map(pattern -> Pattern.compile(pattern, flags()))
           .collect(Collectors.toList());
     }
 
@@ -135,7 +157,7 @@ public @interface MessageHandler {
       super(annotationAttributes);
 
       this.compiledPatterns = Arrays.stream(patterns())
-          .map(pattern -> Pattern.compile(pattern, Pattern.CASE_INSENSITIVE))
+          .map(pattern -> Pattern.compile(pattern, flags()))
           .collect(Collectors.toList());
     }
 
@@ -143,7 +165,7 @@ public @interface MessageHandler {
       super(annotationAttributes);
 
       this.compiledPatterns = Arrays.stream(patterns())
-          .map(pattern -> Pattern.compile(pattern, Pattern.CASE_INSENSITIVE))
+          .map(pattern -> Pattern.compile(pattern, flags()))
           .collect(Collectors.toList());
     }
 
